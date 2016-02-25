@@ -1,2 +1,6 @@
 # WormHoles
-WormHoles is EventQueue like "library" that may make your code cleaner / clearer / lousy coupled.
+WormHoles is EventQueue like "library" written in C++11 that may make your code:
+ - cleaner 
+ - clearer 
+ - lousy coupled.
+
