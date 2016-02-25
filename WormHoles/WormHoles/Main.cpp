@@ -38,7 +38,7 @@ public:
 public:
 	void operator()(const SomeQuestionEvent& question)
 	{
-		std::cout << "I got some question: " << question.message.c_str() << " Unfortunately I've got one generic aswer only." << std::endl;
+		std::cout << "I got some question: " << question.message.c_str() << " Unfortunately I've got one generic answer only." << std::endl;
 
 		WormHoles::EventChannel::Broadcast(SomeAnswerEvent{ "There is no truth!" });
 	}
