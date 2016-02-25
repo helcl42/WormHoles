@@ -5,7 +5,7 @@
 
 namespace WormHoles
 {
-	template <class EventHandlerType, class EventType>
+	template <typename EventHandlerType, typename EventType>
 	class EventHandler
 	{
 	private:
@@ -18,14 +18,14 @@ namespace WormHoles
 	};
 
 
-	template <class EventHandlerType, class EventType>
+	template <typename EventHandlerType, typename EventType>
 	EventHandler<EventHandlerType, EventType>::EventHandler(EventHandlerType* instance)
 		: m_handlerInstance(instance)
 	{
 		EventChannel::Add<EventType>(m_handlerInstance);
 	}
 
-	template <class EventHandlerType, class EventType>
+	template <typename EventHandlerType, typename EventType>
 	EventHandler<EventHandlerType, EventType>::~EventHandler()
 	{
 		EventChannel::Remove<EventType>(m_handlerInstance);
