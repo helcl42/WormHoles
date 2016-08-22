@@ -25,15 +25,16 @@ struct SomeAnswerEvent
 class MagicOracle
 {
 private:
-	WormHoles::EventHandler<MagicOracle, SomeQuestionEvent>* m_handler;
+	WormHoles::EventHandler<MagicOracle, SomeQuestionEvent> m_handler{ this };
 
 public:
 	MagicOracle()
 	{
-		m_handler = new WormHoles::EventHandler<MagicOracle, SomeQuestionEvent>(this);
 	}
 
-	virtual ~MagicOracle() { delete m_handler; }
+	virtual ~MagicOracle() 
+	{ 
+	}
 
 public:
 	void operator()(const SomeQuestionEvent& question)
@@ -47,15 +48,16 @@ public:
 class NosyParker
 {
 private:
-	WormHoles::EventHandler<NosyParker, SomeAnswerEvent>* m_handler;
+	WormHoles::EventHandler<NosyParker, SomeAnswerEvent> m_handler{ this };
 
 public:
 	NosyParker()
 	{
-		m_handler = new WormHoles::EventHandler<NosyParker, SomeAnswerEvent>(this);
 	}
 
-	virtual ~NosyParker() { delete m_handler; }
+	virtual ~NosyParker() 
+	{
+	}
 
 public:
 	void AskQuestion(std::string question)
@@ -72,6 +74,10 @@ public:
 
 int main(int argc, char** argv)
 {
+	////////////////////////////////////////////////////////////////////////////////////
+	// MagicOracle and NosyParker don't know each other while they can communicate..
+	////////////////////////////////////////////////////////////////////////////////////
+
 	MagicOracle oracle;
 
 	NosyParker nosyParker;
