@@ -28,7 +28,7 @@ namespace WormHoles
 			EventChannelQueue<MessageType>::GetInstance().Add(handler);
 		}
 
-		template <class MessageType, typename EventHandlerType>
+		template <typename MessageType, typename EventHandlerType>
 		static void Remove(EventHandlerType* handler)
 		{
 			EventChannelQueue<MessageType>::GetInstance().Remove(handler);

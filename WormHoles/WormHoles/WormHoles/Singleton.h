@@ -3,7 +3,7 @@
 
 namespace WormHoles
 {
-	template <class ChildType>
+	template <typename ChildType>
 	class Singleton
 	{
 	private:
@@ -34,7 +34,7 @@ namespace WormHoles
 		}
 	};
 
-	template <class ChildType>
+	template <typename ChildType>
 	ChildType Singleton<ChildType>::s_instance;
 }
 

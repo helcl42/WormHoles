@@ -7,9 +7,13 @@ struct SomeQuestionEvent
 	std::string message;
 
 	SomeQuestionEvent(std::string message)
-		: message(message) {}
+		: message(message)
+	{
+	}
 
-	virtual ~SomeQuestionEvent() {}
+	virtual ~SomeQuestionEvent()
+	{
+	}
 };
 
 struct SomeAnswerEvent
@@ -17,9 +21,13 @@ struct SomeAnswerEvent
 	std::string message;
 
 	SomeAnswerEvent(std::string message)
-		: message(message) {}
+		: message(message)
+	{
+	}
 
-	virtual ~SomeAnswerEvent() {}
+	virtual ~SomeAnswerEvent()
+	{
+	}
 };
 
 class MagicOracle
@@ -32,8 +40,8 @@ public:
 	{
 	}
 
-	virtual ~MagicOracle() 
-	{ 
+	virtual ~MagicOracle()
+	{
 	}
 
 public:
@@ -55,7 +63,7 @@ public:
 	{
 	}
 
-	virtual ~NosyParker() 
+	virtual ~NosyParker()
 	{
 	}
 
@@ -79,6 +87,7 @@ int main(int argc, char** argv)
 	////////////////////////////////////////////////////////////////////////////////////
 
 	MagicOracle oracle;
+	MagicOracle oracle2;
 
 	NosyParker nosyParker;
 	nosyParker.AskQuestion("Just tell me, what the truth really is?");
