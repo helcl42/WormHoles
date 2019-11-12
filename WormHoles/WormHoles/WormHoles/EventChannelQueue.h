@@ -1,20 +1,19 @@
-#ifndef EVENT_CHANNEL_QUEUE_H
-#define EVENT_CHANNEL_QUEUE_H
+#ifndef __EVENT_CHANNEL_QUEUE_H__
+#define __EVENT_CHANNEL_QUEUE_H__
 
-#include <algorithm>
 #include <functional>
-#include <iostream>
 #include <mutex>
 #include <vector>
-#include <utility>
+
+#include "Singleton.h"
 
 namespace WormHoles
 {
 	template <typename EventType>
-	class EventChannelQueue
+	class EventChannelQueue final : public Singleton<EventChannelQueue<EventType>>
 	{
 	private:
-		static EventChannelQueue s_instance;
+		friend class Singleton<EventChannelQueue<EventType>>;
 
 	private:
 		std::mutex m_mutex;
@@ -23,99 +22,66 @@ namespace WormHoles
 
 		std::vector<void*> m_originalPointers;
 
-	public:
-		static EventChannelQueue& GetInstance();
+	private:
+		EventChannelQueue(EventChannelQueue&& other) = delete;
 
-		template <typename EventHandlerType>
-		void Add(EventHandlerType* handler);
+		EventChannelQueue& operator=(EventChannelQueue&& other) = delete;
 
-		template <typename EventHandlerType>
-		void Remove(EventHandlerType* handler);
+		EventChannelQueue(const EventChannelQueue& other) = delete;
 
-		void Broadcast(const EventType& message);
+		EventChannelQueue& operator=(const EventChannelQueue& other) = delete;
 
 	private:
-		EventChannelQueue(EventChannelQueue&& queue);
+		EventChannelQueue() = default;
 
-		EventChannelQueue& operator=(EventChannelQueue&& queue);
+		~EventChannelQueue() = default;
 
-		EventChannelQueue& operator=(const EventChannelQueue& queue);
-
-		EventChannelQueue();
-
-		virtual ~EventChannelQueue();
-
+	public:
 		template <typename EventHandlerType>
-		std::function<void(const EventType&)> CreateHandler(EventHandlerType* handler);
-	};
-
-
-	template <typename EventType>
-	EventChannelQueue<EventType> EventChannelQueue<EventType>::s_instance;
-
-	template <typename EventType>
-	EventChannelQueue<EventType>& EventChannelQueue<EventType>::GetInstance()
-	{
-		return s_instance;
-	}
-
-	template <typename EventType>
-	EventChannelQueue<EventType>::EventChannelQueue()
-	{
-	}
-
-	template <typename EventType>
-	EventChannelQueue<EventType>::~EventChannelQueue()
-	{
-	}
-
-	template <typename EventType>
-	template <typename EventHandlerType>
-	void EventChannelQueue<EventType>::Add(EventHandlerType* handler)
-	{
-		std::lock_guard<std::mutex> lock(m_mutex);
-
-		m_handlers.push_back(CreateHandler(handler));
-		m_originalPointers.push_back(handler);
-	}
-
-	template <typename EventType>
-	template <typename EventHandlerType>
-	void EventChannelQueue<EventType>::Remove(EventHandlerType* handler)
-	{
-		std::lock_guard<std::mutex> lock(m_mutex);
-
-		auto it = std::find(m_originalPointers.begin(), m_originalPointers.end(), handler);
-		if (it == m_originalPointers.end()) throw std::runtime_error("Tried to remove a handler that is not in the list");
-
-		auto idx = (it - m_originalPointers.begin());
-
-		m_handlers.erase(m_handlers.begin() + idx);
-		m_originalPointers.erase(it);
-	}
-
-	template <typename EventType>
-	void EventChannelQueue<EventType>::Broadcast(const EventType& message)
-	{
-		std::vector<std::function<void(const EventType&)>> localVector(m_handlers.size());
-
+		void Add(EventHandlerType* handler)
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
-			localVector = m_handlers;
+
+			m_handlers.push_back(CreateHandler(handler));
+			m_originalPointers.push_back(handler);
 		}
 
-		for (const auto& handler : localVector)
+		template <typename EventHandlerType>
+		void Remove(EventHandlerType* handler)
 		{
-			handler(message);
-		}
-	}
+			std::lock_guard<std::mutex> lock(m_mutex);
 
-	template <typename EventType>
-	template <typename EventHandlerType>
-	std::function<void(const EventType&)> EventChannelQueue<EventType>::CreateHandler(EventHandlerType* handler)
-	{
-		return [handler](const EventType& message) { (*handler)(message); };
-	}
+			auto it = std::find(m_originalPointers.begin(), m_originalPointers.end(), handler);
+			if (it == m_originalPointers.end()) throw std::runtime_error("Tried to remove a handler that is not in the list");
+
+			auto idx = (it - m_originalPointers.begin());
+
+			m_handlers.erase(m_handlers.begin() + idx);
+			m_originalPointers.erase(it);
+		}
+
+		void Broadcast(const EventType& message) // this shuld be const but it needs to be sycnhronised..
+		{
+			std::vector<std::function<void(const EventType&)>> localVector(m_handlers.size());
+
+			{
+				std::lock_guard<std::mutex> lock(m_mutex);
+				localVector = m_handlers;
+			}
+
+			for (const auto& handler : localVector)
+			{
+				handler(message);
+			}
+		}
+
+	private:
+		template <typename EventHandlerType>
+		static std::function<void(const EventType&)> CreateHandler(EventHandlerType* handler)
+		{
+			return [handler](const EventType& message) { (*handler)(message); };
+		}
+	};
 }
 
 #endif

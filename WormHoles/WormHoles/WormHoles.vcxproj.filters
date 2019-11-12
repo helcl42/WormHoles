@@ -29,5 +29,8 @@
     <ClInclude Include="WormHoles\EventHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WormHoles\Singleton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

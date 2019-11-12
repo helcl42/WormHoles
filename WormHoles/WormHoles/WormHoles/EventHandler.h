@@ -1,35 +1,36 @@
-#ifndef EVENT_HANDLER_H
-#define EVENT_HANDLER_H
+#ifndef __EVENT_HANDLER_H__
+#define __EVENT_HANDLER_H__
 
 #include "EventChannel.h"
 
 namespace WormHoles
 {
 	template <typename EventHandlerType, typename EventType>
-	class EventHandler
+	class EventHandler final
 	{
 	private:
 		EventHandlerType* m_handlerInstance;
 
 	public:
-		EventHandler(EventHandlerType* instance);
+		EventHandler(EventHandlerType* instance)
+		{
+			EventChannel::Add<EventType>(m_handlerInstance);
+		}
 
-		virtual ~EventHandler();
+		virtual ~EventHandler()
+		{
+			EventChannel::Remove<EventType>(m_handlerInstance);
+		}
+
+	public:
+		EventHandler(const EventHandler& other) = default;
+
+		EventHandler& operator=(const EventHandler& other) = default;
+
+		EventHandler(EventHandler&& other) = default;
+
+		EventHandler& operator=(EventHandler&& other) = default;
 	};
-
-
-	template <typename EventHandlerType, typename EventType>
-	EventHandler<EventHandlerType, EventType>::EventHandler(EventHandlerType* instance)
-		: m_handlerInstance(instance)
-	{
-		EventChannel::Add<EventType>(m_handlerInstance);
-	}
-
-	template <typename EventHandlerType, typename EventType>
-	EventHandler<EventHandlerType, EventType>::~EventHandler()
-	{
-		EventChannel::Remove<EventType>(m_handlerInstance);
-	}
 }
 
 #endif
