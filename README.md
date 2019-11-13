@@ -119,7 +119,7 @@ int main(int argc, char** argv)
 
 ## TODO
 
- - register just an lambda instead of "full" handler
+ - register just a lambda instead of "full" handler
 
  - this library might be "inlined" in single header (at the moment there are four)
 
