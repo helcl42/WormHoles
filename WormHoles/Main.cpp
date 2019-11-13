@@ -28,20 +28,26 @@ private:
 	WormHoles::EventHandler<Logger, LogEvent> m_handler{ this };
 
 public:
-	Logger()
+	void operator()(const LogEvent& logItem)
 	{
-	}
+		std::cout << "Logging message to stdout: " << logItem.message << std::endl;
 
-	virtual ~Logger()
-	{
+		// do whatever you want with logItem -> just to sdout here
+		// ...
 	}
+};
+
+class NetworkLogger
+{
+private:
+	WormHoles::EventHandler<NetworkLogger, LogEvent> m_handler{ this };
 
 public:
 	void operator()(const LogEvent& logItem)
 	{
-		std::cout << "I got some log message: " << logItem.message << std::endl;
+		std::cout << "Logging message to network: " << logItem.message << std::endl;
 
-		// do whatever you want with logItem
+		// do whatever you want with logItem -> pass it to web-socket if you need
 		// ...
 	}
 };
@@ -75,9 +81,11 @@ public:
 
 int main(int argc, char** argv)
 {
-	// There is no coupling between System and Logger.
+	// There is no coupling between System and loggers.
 	Logger logger;
+	NetworkLogger networkLogger;
 
+	// the System instance depends on EventChannel and LogEvent(sample code only is taken in account)
 	System system;
 
 	system.Init();
