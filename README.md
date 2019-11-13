@@ -9,7 +9,7 @@ WormHoles is a multiplatform header-only library implementing a threadsafe Event
 
 ## Usage
 
-This sample show how to create lousy coupled Logger. No compomnents touch `Logger` or `NetworkLogger` direcly they just post an event to `EventChannel` like System class does.
+This sample show how to create a lousy coupled Logger. No compomnents touch `Logger` or `NetworkLogger` direcly they just post an event to `EventChannel` like System class does.
 
 ```cpp
 #include <iostream>
@@ -119,9 +119,9 @@ int main(int argc, char** argv)
 
 ## TODO
 
- - register just a lambda instead of "full" handler(functor)
+ - register just a lambda instead of a "full" handler(functor)
 
- - this library might be "inlined" in single header (at the moment there are four)
+ - this library might be "inlined" into a single header (there are four at the moment)
 
  - add more complex examples
 
