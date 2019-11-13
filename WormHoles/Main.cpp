@@ -1,97 +1,95 @@
 #include <iostream>
+#include <string>
+#include <thread>
+#include <chrono>
 
 #include <WormHoles/EventHandler.h>
 #include <WormHoles/EventChannel.h>
 
-struct SomeQuestionEvent
+enum class Severity
 {
-	std::string message;
-
-	SomeQuestionEvent(std::string message)
-		: message(message)
-	{
-	}
-
-	virtual ~SomeQuestionEvent()
-	{
-	}
+	LOG,
+	INFO,
+	WARNING,
+	ERROR
 };
 
-struct SomeAnswerEvent
+// this struct represents an event -> this event might be generated in case you want to log somewhere in your app but you do not want to reference logger
+struct LogEvent
 {
+	Severity severity;
+
 	std::string message;
-
-	SomeAnswerEvent(std::string message)
-		: message(message)
-	{
-	}
-
-	virtual ~SomeAnswerEvent()
-	{
-	}
 };
 
-class MagicOracle
+class Logger
 {
 private:
-	WormHoles::EventHandler<MagicOracle, SomeQuestionEvent> m_handler{ this };
+	WormHoles::EventHandler<Logger, LogEvent> m_handler{ this };
 
 public:
-	MagicOracle()
+	Logger()
 	{
 	}
 
-	virtual ~MagicOracle()
+	virtual ~Logger()
 	{
 	}
 
 public:
-	void operator()(const SomeQuestionEvent& question)
+	void operator()(const LogEvent& logItem)
 	{
-		std::cout << "I got some question: " << question.message.c_str() << " Unfortunately I've got one generic answer only." << std::endl;
+		std::cout << "I got some log message: " << logItem.message << std::endl;
 
-		WormHoles::EventChannel::Broadcast(SomeAnswerEvent{ "There is no truth!" });
+		// do whatever you want with logItem
+		// ...
 	}
 };
 
-class NosyParker
+class System
 {
 private:
-	WormHoles::EventHandler<NosyParker, SomeAnswerEvent> m_handler{ this };
+	uint32_t m_counter{ 0 };
 
 public:
-	NosyParker()
+	void Init()
 	{
+		// ...
+		WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been initialized" });
 	}
 
-	virtual ~NosyParker()
+	void Update()
 	{
+		// ...
+		m_counter++;
+		// ...
+		WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) });
 	}
-
-public:
-	void AskQuestion(std::string question)
+	 
+	void Shutdown()
 	{
-		WormHoles::EventChannel::Broadcast(SomeQuestionEvent{ question });
-	}
-
-public:
-	void operator()(const SomeAnswerEvent& question)
-	{
-		std::cout << "Finally found the answer: " << question.message.c_str() << std::endl;
+		//...
+		WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been shut down" });
 	}
 };
 
 int main(int argc, char** argv)
 {
-	////////////////////////////////////////////////////////////////////////////////////
-	// MagicOracle and NosyParker don't know each other while they can communicate..
-	////////////////////////////////////////////////////////////////////////////////////
+	// There is no coupling between System and Logger.
+	Logger logger;
 
-	MagicOracle oracle;
-	MagicOracle oracle2;
+	System system;
 
-	NosyParker nosyParker;
-	nosyParker.AskQuestion("Just tell me, what the truth really is?");
+	system.Init();
+
+	for (uint32_t i = 0; i < 5; i++)
+	{
+		system.Update();
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+	}
+
+	system.Shutdown();
 
 	return 0;
 }

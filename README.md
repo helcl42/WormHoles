@@ -13,8 +13,12 @@ This sample show how to create lousy coupled Logger. No Compomnents touch Logger
 
 ```cpp
 #include <iostream>
+#include <string>
 #include <thread>
 #include <chrono>
+
+#include <WormHoles/EventHandler.h>
+#include <WormHoles/EventChannel.h>
 
 enum class Severity
 {
@@ -58,29 +62,47 @@ public:
 
 class System
 {
+private:
+	uint32_t m_counter{ 0 };
+
 public:
 	void Init()
 	{
-		// ....
-		EventChannel::BroadCast({ Severity::INFO, "System has been initialized" });
+		// ...
+		WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been initialized" });
 	}
 
+	void Update()
+	{
+		// ...
+		m_counter++;
+		// ...
+		WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) });
+	}
+	 
 	void Shutdown()
 	{
 		//...
-		EventChannel::BroadCast({ Severity::INFO, "System has been shut down" });
+		WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been shut down" });
 	}
 };
 
-void main(int argc, char** argv)
+int main(int argc, char** argv)
 {
 	// There is no coupling between System and Logger.
 	Logger logger;
 
+	// the System instance depends on EventChannel and LogEvent(sample code only is taken in account)
 	System system;
+
 	system.Init();
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+	for (uint32_t i = 0; i < 5; i++)
+	{
+		system.Update();
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+	}
 
 	system.Shutdown();
 
