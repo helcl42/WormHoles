@@ -1,5 +1,5 @@
 # WormHoles
-WormHoles is a multiplatform header-only library implementing an threadsafe Event Bus including features like broadcasting arbitrary events while event handlers have ability to register/unregister from receiving messages(events). 
+WormHoles is a multiplatform header-only library implementing an threadsafe Event Bus. It includes features like broadcasting arbitrary events and ability to register an instance to receive specific types of events 
 
 ## Build
 
@@ -9,7 +9,7 @@ WormHoles is a multiplatform header-only library implementing an threadsafe Even
 
 ## Usage
 
-This sample show how to create lousy coupled Logger. No Compomnents touch Logger direcly they just post an event to `EventChannel` like System class does. Isn't that nice?
+This sample show how to create lousy coupled Logger. No compomnents touch `Logger` or `NetworkLogger` direcly they just post an event to `EventChannel` like System class does.
 
 ```cpp
 #include <iostream>
@@ -117,11 +117,12 @@ int main(int argc, char** argv)
 }
 ```
 
-- For another example take a look at Main.cpp.
-
-- This library might be "inlined" in single header for even simpler integration into an existing project.
-
 ## TODO
+
+ - register just an lambda instead of "full" handler
+
+ - this library might be "inlined" in single header (at the moment there are four)
+
  - add more complex examples
 
  - make tests
