@@ -11,7 +11,7 @@ WormHoles is a multiplatform header-only library implementing an threadsafe Even
 
 This sample show how to create lousy coupled Logger. No Compomnents touch Logger direcly they just post an event to `EventChannel` like System class does. Isn't that nice?
 
-`
+```cpp
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -86,7 +86,8 @@ void main(int argc, char** argv)
 
 	return 0;
 }
-`
+```
+
 - For another example take a look at Main.cpp.
 
 - This library might be "inlined" in single header for even simpler integration into an existing project.
