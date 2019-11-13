@@ -1,5 +1,5 @@
 # WormHoles
-WormHoles is a multiplatform header-only library implementing an threadsafe Event Bus. It includes features like broadcasting arbitrary events and ability to register an instance to receive specific types of events 
+WormHoles is a multiplatform header-only library implementing a threadsafe Event Bus. It includes features like broadcasting arbitrary events and ability to register an instance to receive specific types of events 
 
 ## Build
 
