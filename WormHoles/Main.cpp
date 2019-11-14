@@ -25,7 +25,7 @@ struct LogEvent
 class Logger
 {
 private:
-	WormHoles::EventHandler<Logger, LogEvent> m_handler{ this };
+	WormHoles::EventHandler<Logger, LogEvent> m_handler{ *this };
 
 public:
 	void operator()(const LogEvent& logItem)
@@ -40,7 +40,7 @@ public:
 class NetworkLogger
 {
 private:
-	WormHoles::EventHandler<NetworkLogger, LogEvent> m_handler{ this };
+	WormHoles::EventHandler<NetworkLogger, LogEvent> m_handler{ *this };
 
 public:
 	void operator()(const LogEvent& logItem)

@@ -9,10 +9,10 @@ namespace WormHoles
 	class EventHandler final
 	{
 	private:
-		EventHandlerType* m_handlerInstance;
+		EventHandlerType& m_handlerInstance;
 
 	public:
-		EventHandler(EventHandlerType* instance)
+		EventHandler(EventHandlerType& instance)
 			: m_handlerInstance(instance)
 		{
 			EventChannel::Add<EventType>(m_handlerInstance);

@@ -23,13 +23,13 @@ namespace WormHoles
 
 	public:
 		template <typename MessageType, typename EventHandlerType>
-		static void Add(EventHandlerType* handler)
+		static void Add(EventHandlerType& handler)
 		{
 			EventChannelQueue<MessageType>::GetInstance().Add(handler);
 		}
 
 		template <typename MessageType, typename EventHandlerType>
-		static void Remove(EventHandlerType* handler)
+		static void Remove(EventHandlerType& handler)
 		{
 			EventChannelQueue<MessageType>::GetInstance().Remove(handler);
 		}

@@ -38,20 +38,20 @@ namespace WormHoles
 
 	public:
 		template <typename EventHandlerType>
-		void Add(EventHandlerType* handler)
+		void Add(EventHandlerType& handler)
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 
 			m_handlers.emplace_back(CreateHandler(handler));
-			m_originalPointers.emplace_back(handler);
+			m_originalPointers.emplace_back(&handler);
 		}
 
 		template <typename EventHandlerType>
-		void Remove(EventHandlerType* handler)
+		void Remove(EventHandlerType& handler)
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 
-			auto it = std::find(m_originalPointers.begin(), m_originalPointers.end(), handler);
+			auto it = std::find(m_originalPointers.begin(), m_originalPointers.end(), &handler);
 			if (it == m_originalPointers.end()) throw std::runtime_error("Tried to remove a handler that is not in the list");
 
 			auto idx = (it - m_originalPointers.begin());
@@ -77,9 +77,9 @@ namespace WormHoles
 
 	private:
 		template <typename EventHandlerType>
-		static std::function<void(const EventType&)> CreateHandler(EventHandlerType* handler)
+		static std::function<void(const EventType&)> CreateHandler(EventHandlerType& handler)
 		{
-			return [handler](const EventType& message) { (*handler)(message); };
+			return [&handler](const EventType& message) { handler(message); };
 		}
 	};
 }
