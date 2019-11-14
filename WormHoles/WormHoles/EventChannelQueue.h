@@ -1,6 +1,7 @@
 #ifndef __EVENT_CHANNEL_QUEUE_H__
 #define __EVENT_CHANNEL_QUEUE_H__
 
+#include <algorithm>
 #include <functional>
 #include <mutex>
 #include <vector>
