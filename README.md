@@ -1,8 +1,13 @@
 # WormHoles
 WormHoles is a multiplatform header-only library implementing a threadsafe Event Bus. It includes features like broadcasting arbitrary events and ability to register an instance to receive specific types of events 
 
-## Build [![Build status](https://ci.appveyor.com/api/projects/status/qo2sdot4gifga5ux?svg=true)](https://ci.appveyor.com/project/helcl42/wormholes)
+## Build 
+| Platform         | Status |
+|:----------------:|:------------:|
+| Windows          | [![Build status](https://ci.appveyor.com/api/projects/status/qo2sdot4gifga5ux?svg=true)](https://ci.appveyor.com/project/helcl42/wormholes) |
+| Linux | [![Linux Build Status](https://travis-ci.org/helcl42/WormHoles.svg?branch=master)](https://travis-ci.org/helcl42/WormHoles "Linux Build Status") |
 
+### Instructions
 - Run `mkdir build`
 - Run `cd build`
 - Run `cmake ..`
