@@ -42,8 +42,8 @@ namespace WormHoles
 		{
 			std::lock_guard<std::mutex> lock(m_mutex);
 
-			m_handlers.push_back(CreateHandler(handler));
-			m_originalPointers.push_back(handler);
+			m_handlers.emplace_back(CreateHandler(handler));
+			m_originalPointers.emplace_back(handler);
 		}
 
 		template <typename EventHandlerType>
