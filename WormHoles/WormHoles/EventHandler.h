@@ -13,6 +13,7 @@ namespace WormHoles
 
 	public:
 		EventHandler(EventHandlerType* instance)
+			: m_handlerInstance(instance)
 		{
 			EventChannel::Add<EventType>(m_handlerInstance);
 		}
