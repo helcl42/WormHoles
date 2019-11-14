@@ -62,14 +62,14 @@ namespace WormHoles
 
 		void Broadcast(const EventType& message) // this shuld be const but it needs to be sycnhronised..
 		{
-			std::vector<std::function<void(const EventType&)>> localVector(m_handlers.size());
+			std::vector<std::function<void(const EventType&)>> currentHandlersCopy(m_handlers.size());
 
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
-				localVector = m_handlers;
+				currentHandlersCopy = m_handlers;
 			}
 
-			for (const auto& handler : localVector)
+			for (const auto& handler : currentHandlersCopy)
 			{
 				handler(message);
 			}
