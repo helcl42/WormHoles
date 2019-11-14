@@ -1,9 +1,7 @@
 project(WormHoles)
 cmake_minimum_required(VERSION 2.8)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    add_definitions(-std=c++17)
-endif()
+target_compile_features(cpp-snippets PRIVATE cxx_std_11)
 
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("./WormHoles")
