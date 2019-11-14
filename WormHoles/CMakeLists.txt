@@ -10,9 +10,10 @@ FILE(GLOB EXT_LIST "WormHoles/*.h" "WormHoles/*.cpp")
 
 SOURCE_GROUP(WormHoles FILES ${EXT_LIST})
 
+add_executable(${PROJECT_NAME} ${SRC_LIST} ${EXT_LIST})
+
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
 
-add_executable(${PROJECT_NAME} ${SRC_LIST} ${EXT_LIST})
 
 
 
