@@ -1,0 +1,9 @@
+language: cpp
+os: linux
+compiler: clang
+
+script: ./build.sh
+
+notifications:
+  email:
+    - lubos.helcl@gmail.com
