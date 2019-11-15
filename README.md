@@ -132,7 +132,7 @@ This sample shows a bit more advanced usage of `WormHoles` library. There are a 
 
 -  `Broadcast`- an event is delivered synchronously in current thread context
 
- - `BroadcastWithDispatch` - an event is just stored in a queue and it is delivered once a thread calls `WormHoles::EventChannel::DispatchAll()` -> all stored events in the queue are the delivered in the thread context
+ - `BroadcastWithDispatch` - an event is just stored in a queue and it is delivered once a thread calls `DispatchAll()` -> all stored events in the queue are the delivered in the thread context
 
 
 ```cpp
