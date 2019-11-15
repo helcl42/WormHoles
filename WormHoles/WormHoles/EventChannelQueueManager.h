@@ -18,9 +18,7 @@ namespace WormHoles
 			virtual void DispatchAll() = 0;
 
 		public:
-			virtual ~IEventChannelQueue()
-			{
-			}
+			virtual ~IEventChannelQueue() = default;
 		};
 
 		class EventChannelQueueManager final : public Singleton<EventChannelQueueManager>

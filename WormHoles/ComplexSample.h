@@ -37,6 +37,11 @@ namespace ComlpexSample
 		WormHoles::EventHandler<AbstractLogger, LogEvent> m_logEventsHandler{ *this };
 
 	public:
+		AbstractLogger() = default;
+
+		virtual ~AbstractLogger() = default;
+
+	public:
 		virtual void operator()(const LogEvent& logItem) = 0;
 	};
 
@@ -45,7 +50,7 @@ namespace ComlpexSample
 	public:
 		void operator()(const LogEvent& logItem) override
 		{
-			std::cout << "Logging message to stdout: " << logItem.message << " ThreadId: " << std::this_thread::get_id() << std::endl;
+			std::cout << "Logging message to stdout: " << logItem.message << " ThreadId: " /*<< std::this_thread::get_id()*/ << std::endl;
 
 			// do whatever you want with logItem -> just to sdout here
 			// ...
@@ -57,7 +62,7 @@ namespace ComlpexSample
 	public:
 		void operator()(const LogEvent& logItem) override
 		{
-			std::cout << "Logging message to network: " << logItem.message << " ThreadId: " << std::this_thread::get_id() << std::endl;
+			std::cout << "Logging message to network: " << logItem.message << " ThreadId: " /*<< std::this_thread::get_id()*/ << std::endl;
 
 			// do whatever you want with logItem -> pass it to web-socket if you need
 			// ...
@@ -116,10 +121,8 @@ namespace ComlpexSample
 		{
 		}
 
-		~SubSystem()
-		{
-		}
-
+		~SubSystem() = default;
+		
 	public:
 		void Init()
 		{
