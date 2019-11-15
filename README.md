@@ -366,7 +366,7 @@ void Run()
 
 ## TODO
 
- - this library might be "inlined" into a single header (there are four at the moment)
+ - this library might be "inlined" into a single header
 
  - make tests
 
