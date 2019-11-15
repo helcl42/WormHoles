@@ -25,19 +25,32 @@ namespace WormHoles
 		template <typename MessageType, typename EventHandlerType>
 		static void Add(EventHandlerType& handler)
 		{
-			EventChannelQueue<MessageType>::GetInstance().Add(handler);
+			Internal::EventChannelQueue<MessageType>::GetInstance().Add(handler);
 		}
 
 		template <typename MessageType, typename EventHandlerType>
 		static void Remove(EventHandlerType& handler)
 		{
-			EventChannelQueue<MessageType>::GetInstance().Remove(handler);
+			Internal::EventChannelQueue<MessageType>::GetInstance().Remove(handler);
 		}
 
+		// Should I add new function PostToDispatch instead of enum ??
 		template <typename MessageType>
 		static void Broadcast(const MessageType& message)
 		{
-			EventChannelQueue<MessageType>::GetInstance().Broadcast(message);
+			Internal::EventChannelQueue<MessageType>::GetInstance().Broadcast(message);
+		}
+
+		template <typename MessageType>
+		static void BroadcastWithDispatch(const MessageType& message)
+		{
+			Internal::EventChannelQueue<MessageType>::GetInstance().BroadcastWithDispatch(message);
+		}
+
+		// rename it BroadcastDispatched
+		static void DispatchAll()
+		{
+			Internal::EventChannelQueueManager::GetInstance().BroadcastAll();
 		}
 	};
 }
