@@ -1,5 +1,5 @@
 #ifndef __COMPLEX_SAMPLE_H__
-#define __COMPLEX_SAMPLE_H
+#define __COMPLEX_SAMPLE_H__
 
 #include <iostream>
 #include <string>
