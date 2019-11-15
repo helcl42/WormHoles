@@ -169,6 +169,11 @@ private:
 	WormHoles::EventHandler<AbstractLogger, LogEvent> m_logEventsHandler{ *this };
 
 public:
+	AbstractLogger() = default;
+
+	virtual ~AbstractLogger() = default;
+
+public:
 	virtual void operator()(const LogEvent& logItem) = 0;
 };
 
@@ -248,10 +253,8 @@ public:
 	{
 	}
 
-	~SubSystem()
-	{
-	}
-
+	~SubSystem() = default;
+	
 public:
 	void Init()
 	{
