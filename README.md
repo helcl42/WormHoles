@@ -126,12 +126,11 @@ void Run()
 
 ### Complex Sample
 
-This sample shows a bit more advanced usage of `WormHoles` library. There are a main `System` that starts two quite independently running `SubSystem`s. `SubSystem` instances have their own working loop threads and once they make a progress with their work they notify the main `System` and it generates some `LogEvent` to let user about it. There are two options. They might `Broadcast` their `NotifyEvent` events directly in their loop thread context or they might `BroadcastWithDispatch` and postpone delivery up to the moment when the main thread calls `DispatchAll` and delivers events in it's context. This option is controlled by choosing a broadcast method. You can change by changing value of SYNCRONOUS_DISPATCH to see what happens. Please note ThreadId in output logs.(they are the same for all(`BroadcastWitDispatch` is used) or not).
+This sample shows a bit more advanced usage of `WormHoles` library. There are a main `System` that starts two quite independently running `SubSystem`s. `SubSystem` instances have their own working loop threads and once they make a progress with their work they notify the main `System` and it generates some `LogEvent` to let user about it. There are two options. They might `Broadcast` their `NotifyEvent` events directly in their loop thread context or they might `BroadcastWithDispatch` and postpone delivery up to the moment when the main thread calls `DispatchAll` and delivers events in it's context. This option is controlled by choosing a broadcast method. You can change by changing value of `SYNCRONOUS_DISPATCH` to see what happens. Please note ThreadId in output logs.(they are the same for all(`BroadcastWitDispatch` is used) or not).
 
 #### Dispatch Options
 
 -  `Broadcast`- an event is delivered synchronously in current thread context
-
  - `BroadcastWithDispatch` - an event is just stored in a queue and it is delivered once a thread calls `DispatchAll()` -> all stored events in the queue are the delivered in the thread context
 
 
