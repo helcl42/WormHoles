@@ -31,16 +31,16 @@ namespace ComlpexSample
 		std::string message;
 	};
 
-	class AbstractKLogger
+	class AbstractLogger
 	{
 	private:
-		WormHoles::EventHandler<AbstractKLogger, LogEvent> m_logEventsHandler{ *this };
+		WormHoles::EventHandler<AbstractLogger, LogEvent> m_logEventsHandler{ *this };
 
 	public:
 		virtual void operator()(const LogEvent& logItem) = 0;
 	};
 
-	class StdOutLogger final : public AbstractKLogger
+	class StdOutLogger final : public AbstractLogger
 	{
 	public:
 		void operator()(const LogEvent& logItem) override
@@ -52,7 +52,7 @@ namespace ComlpexSample
 		}
 	};
 
-	class NetworkLogger final : public AbstractKLogger
+	class NetworkLogger final : public AbstractLogger
 	{
 	public:
 		void operator()(const LogEvent& logItem) override
