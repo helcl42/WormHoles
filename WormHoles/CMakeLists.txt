@@ -12,6 +12,10 @@ SOURCE_GROUP(WormHoles FILES ${EXT_LIST})
 
 add_executable(${PROJECT_NAME} ${SRC_LIST} ${EXT_LIST})
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	TARGET_LINK_LIBRARIES(${PROJECT_NAME} pthread)
+endif()
+
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
 
 
