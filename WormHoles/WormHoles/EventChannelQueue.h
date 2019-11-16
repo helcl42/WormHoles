@@ -20,7 +20,7 @@ namespace WormHoles
 
 			std::vector<void*> m_originalPointers;
 
-			std::vector<EventType> m_unsedMessages;
+			std::vector<EventType> m_eventsToDeliver;
 
 		private:
 			EventChannelQueue(EventChannelQueue&& other) = delete;
@@ -86,20 +86,20 @@ namespace WormHoles
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
 
-				m_unsedMessages.emplace_back(message);
+				m_eventsToDeliver.emplace_back(message);
 			}
 
 			void DispatchAll() override
 			{
 				std::vector<std::function<void(const EventType&)>> currentHandlersCopy(m_handlers.size());
-				std::vector<EventType> currentUnsendMessages(m_unsedMessages.size());
+				std::vector<EventType> currentUnsendMessages(m_eventsToDeliver.size());
 
 				{
 					std::lock_guard<std::mutex> lock(m_mutex);
 					currentHandlersCopy = m_handlers;
 
-					currentUnsendMessages = m_unsedMessages;
-					m_unsedMessages.clear();
+					currentUnsendMessages = m_eventsToDeliver;
+					m_eventsToDeliver.clear();
 				}
 
 				for (const auto& message : currentUnsendMessages)
