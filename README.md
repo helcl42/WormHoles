@@ -17,7 +17,7 @@ Currently it provides three dispatch options. The usable core of the library is 
  - `SYNC` - Event is dispatched directly within the current thread.
  - `ASYNC` - Event is dispatched on another thread from internal threadpool. It might prevent you from long blocking in event handlers.
 
-In the project there are two sample simple and complex. The former example shows basic usage and helps you better understad the latter one. For more see below.
+In the project there are two examples simple and a bit more complex. For more see the sections below.
 
 ### Build instructions
 - Run `mkdir build`
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
 
 ### Complex Sample
 
-This sample shows a bit more advanced usage of `WormHoles` library. There are a main `System` that starts two quite independently running `SubSystem`s. `SubSystem` instances have their own working loop threads and once they make a progress with their work they notify the main `System` and it generates some `LogEvent` to let user about it.
+This sample shows a bit more advanced usage of `WormHoles` library. There are a main `System` that starts two quite independently running `SubSystem`s. `SubSystem` instances have their own working loop threads and once they make a progress with their work they notify the main `System` and it generates some `LogEvent` to let user about it's progress/state.
 
 
 ```cpp
@@ -341,7 +341,5 @@ int main(int argc, char** argv)
 
 ## TODO
 
- - this library might be "inlined" into a single header
-
- - make tests
+ - ! make tests !
 
