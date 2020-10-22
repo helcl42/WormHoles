@@ -9,201 +9,198 @@
 #include <worm/EventHandler.h>
 
 enum class Severity {
-	LOG,
-	INFO,
-	WARNING,
-	ERROR
+    LOG,
+    INFO,
+    WARNING,
+    ERROR
 };
 
 // this struct represents an event -> this event might be generated in case you want to log somewhere in your app but you do not want to reference logger
 struct LogEvent {
-	Severity severity;
+    Severity severity;
 
-	std::string message;
+    std::string message;
 };
 
 class StdOutLogger final {
 public:
-	void operator()(const LogEvent& logItem)
-	{
-		std::cout << "Logging message to stdout: " << logItem.message << " ThreadId: " << std::this_thread::get_id() << std::endl;
+    void operator()(const LogEvent& logItem)
+    {
+        std::cout << "Logging message to stdout: " << logItem.message << " ThreadId: " << std::this_thread::get_id() << std::endl;
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
-		// do whatever you want with logItem -> just to sdout here
-		// ...
-	}
+        // do whatever you want with logItem -> just to sdout here
+        // ...
+    }
 
 private:
-	worm::EventHandler<StdOutLogger, LogEvent> m_logEventsHandler{ *this };
-
+    worm::EventHandler<StdOutLogger, LogEvent> m_logEventsHandler{ *this };
 };
 
 class NetworkLogger final {
 public:
-	void operator()(const LogEvent& logItem)
-	{
-		std::cout << "Logging message to network: " << logItem.message << " ThreadId: " << std::this_thread::get_id() << std::endl;
+    void operator()(const LogEvent& logItem)
+    {
+        std::cout << "Logging message to network: " << logItem.message << " ThreadId: " << std::this_thread::get_id() << std::endl;
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(40));
+        std::this_thread::sleep_for(std::chrono::milliseconds(40));
 
-		// do whatever you want with logItem -> pass it to web-socket if you need
-		// ...
-	}
+        // do whatever you want with logItem -> pass it to web-socket if you need
+        // ...
+    }
 
 private:
-	worm::EventHandler<NetworkLogger, LogEvent> m_logEventsHandler{ *this };
-
+    worm::EventHandler<NetworkLogger, LogEvent> m_logEventsHandler{ *this };
 };
 
 struct NotifyEvent {
-	std::string subSystemName;
+    std::string subSystemName;
 
-	std::string statusString;
+    std::string statusString;
 };
 
 class SubSystem {
 private:
-	void Loop()
-	{
-		while (m_running) {
-			m_statusString += m_buildingBlock;
+    void Loop()
+    {
+        while (m_running) {
+            m_statusString += m_buildingBlock;
 
-			worm::EventChannel::Broadcast(NotifyEvent{ m_name, m_statusString }, m_updateDispatchType);
+            worm::EventChannel::Broadcast(NotifyEvent{ m_name, m_statusString }, m_updateDispatchType);
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(m_timeoutInMs));
-		}
-	}
-
-public:
-	SubSystem(const std::string& name, const std::string& buildingBlock, const uint64_t timeout)
-		: m_name(name)
-		, m_buildingBlock(buildingBlock)
-		, m_timeoutInMs(timeout)
-		, m_running(false)
-	{
-	}
-
-	~SubSystem() = default;
+            std::this_thread::sleep_for(std::chrono::milliseconds(m_timeoutInMs));
+        }
+    }
 
 public:
-	void Init()
-	{
-		std::lock_guard<std::mutex> lock(m_mutex);
+    SubSystem(const std::string& name, const std::string& buildingBlock, const uint64_t timeout)
+        : m_name(name)
+        , m_buildingBlock(buildingBlock)
+        , m_timeoutInMs(timeout)
+        , m_running(false)
+    {
+    }
 
-		if (m_running) {
-			return;
-		}
+    ~SubSystem() = default;
 
-		m_running = true;
-		m_thread = std::thread(&SubSystem::Loop, this);
+public:
+    void Init()
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
 
-		worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been initialized" }, worm::DispatchType::SYNC);
-	}
+        if (m_running) {
+            return;
+        }
 
-	void Shutdown()
-	{
-		std::lock_guard<std::mutex> lock(m_mutex);
+        m_running = true;
+        m_thread = std::thread(&SubSystem::Loop, this);
 
-		if (!m_running) {
-			return;
-		}
+        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been initialized" }, worm::DispatchType::SYNC);
+    }
 
-		m_running = false;
-		if (m_thread.joinable()) {
-			m_thread.join();
-		}
+    void Shutdown()
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
 
-		worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been shut down" }, worm::DispatchType::SYNC);
-	}
+        if (!m_running) {
+            return;
+        }
 
-	bool IsRunning() const
-	{
-		std::lock_guard<std::mutex> lock(m_mutex);
+        m_running = false;
+        if (m_thread.joinable()) {
+            m_thread.join();
+        }
 
-		return m_running;
-	}
+        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been shut down" }, worm::DispatchType::SYNC);
+    }
+
+    bool IsRunning() const
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        return m_running;
+    }
 
 private:
-	std::string m_name;
+    std::string m_name;
 
-	std::string m_buildingBlock;
+    std::string m_buildingBlock;
 
-	uint64_t m_timeoutInMs;
+    uint64_t m_timeoutInMs;
 
-	std::string m_statusString;
+    std::string m_statusString;
 
-	std::thread m_thread;
+    std::thread m_thread;
 
-	mutable std::mutex m_mutex;
+    mutable std::mutex m_mutex;
 
-	std::atomic<bool> m_running;
+    std::atomic<bool> m_running;
 
-	const worm::DispatchType m_updateDispatchType{ worm::DispatchType::ASYNC };
-
+    const worm::DispatchType m_updateDispatchType{ worm::DispatchType::ASYNC };
 };
 
 class System {
 public:
-	void Init()
-	{
-		m_subSystemX.Init();
-		m_subSystemY.Init();
+    void Init()
+    {
+        m_subSystemX.Init();
+        m_subSystemY.Init();
 
-		worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been initialized" }, worm::DispatchType::SYNC);
-	}
+        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been initialized" }, worm::DispatchType::SYNC);
+    }
 
-	void Update()
-	{
-		m_counter++;
+    void Update()
+    {
+        m_counter++;
 
-		worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
-	}
+        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
+    }
 
-	void Shutdown()
-	{
-		m_subSystemY.Shutdown();
-		m_subSystemX.Shutdown();
+    void Shutdown()
+    {
+        m_subSystemY.Shutdown();
+        m_subSystemX.Shutdown();
 
-		worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been shut down" }, worm::DispatchType::SYNC);
-	}
+        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been shut down" }, worm::DispatchType::SYNC);
+    }
 
 public:
-	void operator()(const NotifyEvent& notify)
-	{
-		worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System was notified by SubSystem " + notify.subSystemName + " about it's work progress \"" + notify.statusString + "\"" }, worm::DispatchType::SYNC);
-	}
+    void operator()(const NotifyEvent& notify)
+    {
+        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System was notified by SubSystem " + notify.subSystemName + " about it's work progress \"" + notify.statusString + "\"" }, worm::DispatchType::SYNC);
+    }
 
 private:
-	worm::EventHandler<System, NotifyEvent> m_notifyEventsHandler{ *this };
+    worm::EventHandler<System, NotifyEvent> m_notifyEventsHandler{ *this };
 
 private:
-	SubSystem m_subSystemX{ "TrippleX", "X", 250 };
+    SubSystem m_subSystemX{ "TrippleX", "X", 250 };
 
-	SubSystem m_subSystemY{ "DoubleY", "Y", 375 };
+    SubSystem m_subSystemY{ "DoubleY", "Y", 375 };
 
-	uint32_t m_counter{ 0 };
+    uint32_t m_counter{ 0 };
 };
 
 int main(int argc, char** argv)
 {
-	// There is no coupling between System, SubSystem and loggers.
-	StdOutLogger logger;
-	NetworkLogger networkLogger;
+    // There is no coupling between System, SubSystem and loggers.
+    StdOutLogger logger;
+    NetworkLogger networkLogger;
 
-	System system;
+    System system;
 
-	system.Init();
+    system.Init();
 
-	for (uint32_t i = 0; i < 50; i++) {
-		worm::EventChannel::DispatchAll();
+    for (uint32_t i = 0; i < 50; i++) {
+        worm::EventChannel::DispatchAll();
 
-		system.Update();
+        system.Update();
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	}
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
-	system.Shutdown();
+    system.Shutdown();
 
-	return 0;
+    return 0;
 }
