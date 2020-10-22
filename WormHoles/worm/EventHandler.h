@@ -3,7 +3,7 @@
 
 #include "EventChannel.h"
 
-namespace WormHoles {
+namespace worm {
 template <typename EventHandlerType, typename EventType>
 class EventHandler final {
 private:
@@ -16,7 +16,7 @@ public:
         EventChannel::Add<EventType>(m_handlerInstance);
     }
 
-    virtual ~EventHandler()
+    ~EventHandler()
     {
         EventChannel::Remove<EventType>(m_handlerInstance);
     }
@@ -30,6 +30,6 @@ public:
 
     EventHandler& operator=(EventHandler&& other) = default;
 };
-} // namespace WormHoles
+} // namespace worm
 
 #endif

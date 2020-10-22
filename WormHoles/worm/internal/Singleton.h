@@ -1,15 +1,18 @@
 #ifndef __SINGLETON_H__
 #define __SINGLETON_H__
 
-namespace WormHoles {
-namespace Internal {
+namespace worm {
+namespace internal {
     template <typename ChildType>
     class Singleton {
-    private:
-        friend ChildType;
+    public:
+        virtual ~Singleton() = default;
 
-    private:
-        static ChildType s_instance;
+    public:
+        static ChildType& GetInstance()
+        {
+            return s_instance;
+        }
 
     private:
         Singleton(const Singleton& other) = delete;
@@ -23,19 +26,16 @@ namespace Internal {
     private:
         Singleton() = default;
 
-    public:
-        virtual ~Singleton() = default;
+    private:
+        friend ChildType;
 
-    public:
-        static ChildType& GetInstance()
-        {
-            return s_instance;
-        }
+    private:
+        static ChildType s_instance;
     };
 
     template <typename ChildType>
     ChildType Singleton<ChildType>::s_instance;
-} // namespace Internal
-} // namespace WormHoles
+} // namespace internal
+} // namespace worm
 
 #endif

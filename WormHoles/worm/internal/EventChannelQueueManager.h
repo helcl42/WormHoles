@@ -8,8 +8,8 @@
 
 #include "Singleton.h"
 
-namespace WormHoles {
-namespace Internal {
+namespace worm {
+namespace internal {
     class IEventChannelQueue {
     public:
         virtual void DispatchAll() = 0;
@@ -19,28 +19,6 @@ namespace Internal {
     };
 
     class EventChannelQueueManager final : public Singleton<EventChannelQueueManager> {
-    private:
-        friend class Singleton<EventChannelQueueManager>;
-
-    private:
-        std::mutex m_mutex;
-
-        std::vector<IEventChannelQueue*> m_eventChannelQueues;
-
-    private:
-        EventChannelQueueManager(EventChannelQueueManager&& other) = delete;
-
-        EventChannelQueueManager& operator=(EventChannelQueueManager&& other) = delete;
-
-        EventChannelQueueManager(const EventChannelQueueManager& other) = delete;
-
-        EventChannelQueueManager& operator=(const EventChannelQueueManager& other) = delete;
-
-    private:
-        EventChannelQueueManager() = default;
-
-        ~EventChannelQueueManager() = default;
-
     public:
         void Add(IEventChannelQueue& queue)
         {
@@ -70,8 +48,30 @@ namespace Internal {
                 queue->DispatchAll();
             }
         }
+
+    private:
+        EventChannelQueueManager() = default;
+
+        ~EventChannelQueueManager() = default;
+
+    private:
+        EventChannelQueueManager(EventChannelQueueManager&& other) = delete;
+
+        EventChannelQueueManager& operator=(EventChannelQueueManager&& other) = delete;
+
+        EventChannelQueueManager(const EventChannelQueueManager& other) = delete;
+
+        EventChannelQueueManager& operator=(const EventChannelQueueManager& other) = delete;
+
+    private:
+        friend class Singleton<EventChannelQueueManager>;
+
+    private:
+        std::mutex m_mutex;
+
+        std::vector<IEventChannelQueue*> m_eventChannelQueues;
     };
-} // namespace Internal
-} // namespace WormHoles
+} // namespace internal
+} // namespace worm
 
 #endif // !__EVENT_CHANNEL_QUEUE_MANAGER_H__
