@@ -5,6 +5,12 @@
 
 namespace WormHoles
 {
+	enum class DispatchType {
+		MAIN_THREAD,
+		SYNC,
+		ASYNC
+	};
+
 	class EventChannel final
 	{
 	private:
@@ -34,17 +40,21 @@ namespace WormHoles
 			Internal::EventChannelQueue<MessageType>::GetInstance().Remove(handler);
 		}
 
-		// Should I add new function PostToDispatch instead of enum ??
 		template <typename MessageType>
-		static void Broadcast(const MessageType& message)
+		static void Broadcast(const MessageType& message, const DispatchType dispatchType)
 		{
-			Internal::EventChannelQueue<MessageType>::GetInstance().Broadcast(message);
-		}
-
-		template <typename MessageType>
-		static void BroadcastWithDispatch(const MessageType& message)
-		{
-			Internal::EventChannelQueue<MessageType>::GetInstance().BroadcastWithDispatch(message);
+			switch (dispatchType)
+			{
+			case DispatchType::ASYNC:
+				Internal::EventChannelQueue<MessageType>::GetInstance().BroadcastAsync(message);
+				break;
+			case DispatchType::MAIN_THREAD:
+				Internal::EventChannelQueue<MessageType>::GetInstance().BroadcastMainThread(message);
+				break;
+			default:
+				Internal::EventChannelQueue<MessageType>::GetInstance().Broadcast(message);
+				break;
+			}
 		}
 
 		// rename it BroadcastDispatched

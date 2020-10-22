@@ -13,8 +13,6 @@
 
 namespace ComlpexSample
 {
-	constexpr bool SYNCRONOUS_DISPATCH = true;
-
 	enum class Severity
 	{
 		LOG,
@@ -31,38 +29,34 @@ namespace ComlpexSample
 		std::string message;
 	};
 
-	class AbstractLogger
+	class StdOutLogger final
 	{
 	private:
-		WormHoles::EventHandler<AbstractLogger, LogEvent> m_logEventsHandler{ *this };
+		WormHoles::EventHandler<StdOutLogger, LogEvent> m_logEventsHandler{ *this };
 
 	public:
-		AbstractLogger() = default;
-
-		virtual ~AbstractLogger() = default;
-
-	public:
-		virtual void operator()(const LogEvent& logItem) = 0;
-	};
-
-	class StdOutLogger final : public AbstractLogger
-	{
-	public:
-		void operator()(const LogEvent& logItem) override
+		void operator()(const LogEvent& logItem)
 		{
 			std::cout << "Logging message to stdout: " << logItem.message << " ThreadId: " << std::this_thread::get_id() << std::endl;
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(20));
 
 			// do whatever you want with logItem -> just to sdout here
 			// ...
 		}
 	};
 
-	class NetworkLogger final : public AbstractLogger
+	class NetworkLogger final
 	{
+	private:
+		WormHoles::EventHandler<NetworkLogger, LogEvent> m_logEventsHandler{ *this };
+
 	public:
-		void operator()(const LogEvent& logItem) override
+		void operator()(const LogEvent& logItem)
 		{
 			std::cout << "Logging message to network: " << logItem.message << " ThreadId: " << std::this_thread::get_id() << std::endl;
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(40));
 
 			// do whatever you want with logItem -> pass it to web-socket if you need
 			// ...
@@ -83,7 +77,7 @@ namespace ComlpexSample
 
 		std::string m_buildingBlock;
 
-		long long m_timeoutInMs;
+		uint64_t m_timeoutInMs;
 
 		std::string m_statusString;
 
@@ -93,6 +87,8 @@ namespace ComlpexSample
 
 		std::atomic<bool> m_running;
 
+		const WormHoles::DispatchType m_updateDispatchType{ WormHoles::DispatchType::ASYNC };
+
 	private:
 		void Loop()
 		{
@@ -100,29 +96,24 @@ namespace ComlpexSample
 			{
 				m_statusString += m_buildingBlock;
 
-				NotifyEvent newNotifyEvent{ m_name, m_statusString };
-
-				if (SYNCRONOUS_DISPATCH)
-				{
-					WormHoles::EventChannel::BroadcastWithDispatch(newNotifyEvent);
-				}
-				else
-				{
-					WormHoles::EventChannel::Broadcast(newNotifyEvent);
-				}
+				WormHoles::EventChannel::Broadcast(NotifyEvent{ m_name, m_statusString }, m_updateDispatchType);
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(m_timeoutInMs));
 			}
 		}
 
 	public:
-		SubSystem(const std::string& name, const std::string& buildingBlock, long long timeout)
+		SubSystem(const std::string& name, const std::string& buildingBlock, const uint64_t timeout)
 			: m_name(name), m_buildingBlock(buildingBlock), m_timeoutInMs(timeout), m_running(false)
 		{
+			//std::cout << "SubSystem created" << std::endl;
 		}
 
-		~SubSystem() = default;
-		
+		~SubSystem()
+		{
+			//std::cout << "SubSystem destroyed" << std::endl;
+		}
+
 	public:
 		void Init()
 		{
@@ -136,7 +127,7 @@ namespace ComlpexSample
 			m_running = true;
 			m_thread = std::thread(&SubSystem::Loop, this);
 
-			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been initialized" });
+			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been initialized" }, WormHoles::DispatchType::SYNC);
 		}
 
 		void Shutdown()
@@ -154,7 +145,7 @@ namespace ComlpexSample
 				m_thread.join();
 			}
 
-			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been shut down" });
+			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been shut down" }, WormHoles::DispatchType::SYNC);
 		}
 
 		bool IsRunning() const
@@ -183,14 +174,14 @@ namespace ComlpexSample
 			m_subSystemX.Init();
 			m_subSystemY.Init();
 
-			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been initialized" });
+			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been initialized" }, WormHoles::DispatchType::SYNC);
 		}
 
 		void Update()
 		{
 			m_counter++;
 
-			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) });
+			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, WormHoles::DispatchType::ASYNC);
 		}
 
 		void Shutdown()
@@ -198,13 +189,13 @@ namespace ComlpexSample
 			m_subSystemY.Shutdown();
 			m_subSystemX.Shutdown();
 
-			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been shut down" });
+			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been shut down" }, WormHoles::DispatchType::SYNC);
 		}
 
 	public:
 		void operator() (const NotifyEvent& notify)
 		{
-			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System was notified by SubSystem " + notify.subSystemName + " about it's work progress \"" + notify.statusString + "\"" });
+			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System was notified by SubSystem " + notify.subSystemName + " about it's work progress \"" + notify.statusString + "\"" }, WormHoles::DispatchType::SYNC);
 		}
 	};
 

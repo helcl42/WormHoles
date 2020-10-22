@@ -66,7 +66,7 @@ namespace SimpleSample
 		void Init()
 		{
 			// ...
-			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been initialized" });
+			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been initialized" }, WormHoles::DispatchType::SYNC);
 		}
 
 		void Update()
@@ -74,13 +74,13 @@ namespace SimpleSample
 			// ...
 			m_counter++;
 			// ...
-			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) });
+			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, WormHoles::DispatchType::ASYNC);
 		}
 
 		void Shutdown()
 		{
 			//...
-			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been shut down" });
+			WormHoles::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been shut down" }, WormHoles::DispatchType::SYNC);
 		}
 	};
 
@@ -95,16 +95,15 @@ namespace SimpleSample
 
 		system.Init();
 
-		for (uint32_t i = 0; i < 5; i++)
+		for (uint32_t i = 0; i < 50; i++)
 		{
 			system.Update();
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(1200));
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 
 		system.Shutdown();
 	}
 }
-
 
 #endif
