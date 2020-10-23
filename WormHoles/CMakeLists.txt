@@ -13,10 +13,6 @@ FILE(GLOB WORM_HOLES_INTERNAL_SRC_LIST "worm/internal/*.h" "worm/internal/*.cpp"
 SOURCE_GROUP("worm" FILES ${WORM_HOLES_SRC_LIST})
 SOURCE_GROUP("worm/internal" FILES ${WORM_HOLES_INTERNAL_SRC_LIST})
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME} pthread)
-endif()
-
 add_library(${PROJECT_NAME} INTERFACE)
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
