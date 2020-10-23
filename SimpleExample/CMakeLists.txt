@@ -19,6 +19,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME} pthread)
 endif()
 
+set(CMAKE_CXX_STANDARD 17)
+
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
 
