@@ -1,41 +1,39 @@
 #ifndef __SINGLETON_H__
 #define __SINGLETON_H__
 
-namespace worm {
-namespace internal {
-    template <typename ChildType>
-    class Singleton {
-    public:
-        virtual ~Singleton() = default;
+namespace worm::internal {
+template <typename ChildType>
+class Singleton {
+public:
+    virtual ~Singleton() = default;
 
-    public:
-        static ChildType& GetInstance()
-        {
-            return s_instance;
-        }
+public:
+    static ChildType& Instance()
+    {
+        return s_instance;
+    }
 
-    private:
-        Singleton(const Singleton& other) = delete;
+private:
+    Singleton(const Singleton& other) = delete;
 
-        Singleton(Singleton&& other) = delete;
+    Singleton(Singleton&& other) = delete;
 
-        Singleton& operator=(const Singleton& other) = delete;
+    Singleton& operator=(const Singleton& other) = delete;
 
-        Singleton& operator=(Singleton&& other) = delete;
+    Singleton& operator=(Singleton&& other) = delete;
 
-    private:
-        Singleton() = default;
+private:
+    Singleton() = default;
 
-    private:
-        friend ChildType;
+private:
+    friend ChildType;
 
-    private:
-        static ChildType s_instance;
-    };
+private:
+    static ChildType s_instance;
+};
 
-    template <typename ChildType>
-    ChildType Singleton<ChildType>::s_instance;
-} // namespace internal
-} // namespace worm
+template <typename ChildType>
+ChildType Singleton<ChildType>::s_instance;
+} // namespace worm::internal
 
 #endif

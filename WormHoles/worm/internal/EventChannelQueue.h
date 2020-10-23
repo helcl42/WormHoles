@@ -4,137 +4,135 @@
 #include "EventChannelQueueManager.h"
 #include "ThreadPool.h"
 
-namespace worm {
-namespace internal {
-    template <typename EventType>
-    class EventChannelQueue final : public Singleton<EventChannelQueue<EventType> >, public IEventChannelQueue {
-    public:
-        template <typename EventHandlerType>
-        void Add(EventHandlerType& handler)
+namespace worm::internal {
+template <typename EventType>
+class EventChannelQueue final : public Singleton<EventChannelQueue<EventType> >, public IEventChannelQueue {
+public:
+    template <typename EventHandlerType>
+    void Add(EventHandlerType& handler)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        m_handlers.emplace_back(CreateHandler(handler));
+        m_originalPointers.emplace_back(&handler);
+    }
+
+    template <typename EventHandlerType>
+    void Remove(EventHandlerType& handler)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        auto it = std::find(m_originalPointers.begin(), m_originalPointers.end(), &handler);
+        if (it == m_originalPointers.end()) {
+            throw std::runtime_error("Tried to remove a handler that is not in the list");
+        }
+
+        auto idx = (it - m_originalPointers.begin());
+
+        m_handlers.erase(m_handlers.begin() + idx);
+        m_originalPointers.erase(it);
+    }
+
+    void Broadcast(const EventType& message)
+    {
+        std::vector<std::function<void(const EventType&)> > currentHandlersCopy;
+
         {
             std::lock_guard<std::mutex> lock(m_mutex);
 
-            m_handlers.emplace_back(CreateHandler(handler));
-            m_originalPointers.emplace_back(&handler);
+            currentHandlersCopy = m_handlers;
         }
 
-        template <typename EventHandlerType>
-        void Remove(EventHandlerType& handler)
-        {
-            std::lock_guard<std::mutex> lock(m_mutex);
-
-            auto it = std::find(m_originalPointers.begin(), m_originalPointers.end(), &handler);
-            if (it == m_originalPointers.end()) {
-                throw std::runtime_error("Tried to remove a handler that is not in the list");
-            }
-
-            auto idx = (it - m_originalPointers.begin());
-
-            m_handlers.erase(m_handlers.begin() + idx);
-            m_originalPointers.erase(it);
+        for (const auto& handler : currentHandlersCopy) {
+            handler(message);
         }
+    }
 
-        void Broadcast(const EventType& message)
-        {
+    void BroadcastMainThread(const EventType& message)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        m_eventsToDeliver.emplace_back(message);
+    }
+
+    void BroadcastAsync(const EventType& message)
+    {
+        m_threadPool.Enqueue([this, message]() {
             std::vector<std::function<void(const EventType&)> > currentHandlersCopy;
 
             {
-                std::lock_guard<std::mutex> lock(m_mutex);
-
+                std::lock_guard<std::mutex> lock(this->m_mutex);
                 currentHandlersCopy = m_handlers;
             }
 
+            for (const auto& handler : m_handlers) {
+                handler(message);
+            }
+        });
+    }
+
+    void DispatchAll() override
+    {
+        std::vector<std::function<void(const EventType&)> > currentHandlersCopy;
+        std::vector<EventType> currentUnsendMessages;
+
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+
+            currentHandlersCopy = m_handlers;
+            currentUnsendMessages = m_eventsToDeliver;
+            m_eventsToDeliver.clear();
+        }
+
+        for (const auto& message : currentUnsendMessages) {
             for (const auto& handler : currentHandlersCopy) {
                 handler(message);
             }
         }
+    }
 
-        void BroadcastMainThread(const EventType& message)
-        {
-            std::lock_guard<std::mutex> lock(m_mutex);
+private:
+    EventChannelQueue()
+        : Singleton<EventChannelQueue<EventType> >()
+    {
+        EventChannelQueueManager::Instance().Add(*this);
+    }
 
-            m_eventsToDeliver.emplace_back(message);
-        }
+    ~EventChannelQueue()
+    {
+        EventChannelQueueManager::Instance().Remove(*this);
+    }
 
-        void BroadcastAsync(const EventType& message)
-        {
-            m_threadPool.Enqueue([this, message]() {
-                std::vector<std::function<void(const EventType&)> > currentHandlersCopy;
+private:
+    EventChannelQueue(EventChannelQueue&& other) = delete;
 
-                {
-                    std::lock_guard<std::mutex> lock(this->m_mutex);
-                    currentHandlersCopy = m_handlers;
-                }
+    EventChannelQueue& operator=(EventChannelQueue&& other) = delete;
 
-                for (const auto& handler : m_handlers) {
-                    handler(message);
-                }
-            });
-        }
+    EventChannelQueue(const EventChannelQueue& other) = delete;
 
-        void DispatchAll() override
-        {
-            std::vector<std::function<void(const EventType&)> > currentHandlersCopy;
-            std::vector<EventType> currentUnsendMessages;
+    EventChannelQueue& operator=(const EventChannelQueue& other) = delete;
 
-            {
-                std::lock_guard<std::mutex> lock(m_mutex);
+private:
+    template <typename EventHandlerType>
+    static std::function<void(const EventType&)> CreateHandler(EventHandlerType& handler)
+    {
+        return [&handler](const EventType& message) { handler(message); };
+    }
 
-                currentHandlersCopy = m_handlers;
-                currentUnsendMessages = m_eventsToDeliver;
-                m_eventsToDeliver.clear();
-            }
+private:
+    friend class Singleton<EventChannelQueue<EventType> >;
 
-            for (const auto& message : currentUnsendMessages) {
-                for (const auto& handler : currentHandlersCopy) {
-                    handler(message);
-                }
-            }
-        }
+private:
+    std::mutex m_mutex;
 
-    private:
-        EventChannelQueue()
-            : Singleton<EventChannelQueue<EventType> >()
-        {
-            EventChannelQueueManager::GetInstance().Add(*this);
-        }
+    std::vector<std::function<void(const EventType&)> > m_handlers;
 
-        ~EventChannelQueue()
-        {
-            EventChannelQueueManager::GetInstance().Remove(*this);
-        }
+    std::vector<void*> m_originalPointers;
 
-    private:
-        EventChannelQueue(EventChannelQueue&& other) = delete;
+    std::vector<EventType> m_eventsToDeliver;
 
-        EventChannelQueue& operator=(EventChannelQueue&& other) = delete;
-
-        EventChannelQueue(const EventChannelQueue& other) = delete;
-
-        EventChannelQueue& operator=(const EventChannelQueue& other) = delete;
-
-    private:
-        template <typename EventHandlerType>
-        static std::function<void(const EventType&)> CreateHandler(EventHandlerType& handler)
-        {
-            return [&handler](const EventType& message) { handler(message); };
-        }
-
-    private:
-        friend class Singleton<EventChannelQueue<EventType> >;
-
-    private:
-        std::mutex m_mutex;
-
-        std::vector<std::function<void(const EventType&)> > m_handlers;
-
-        std::vector<void*> m_originalPointers;
-
-        std::vector<EventType> m_eventsToDeliver;
-
-        internal::ThreadPool m_threadPool{ 1 };
-    };
-} // namespace internal
-} // namespace worm
+    internal::ThreadPool m_threadPool{ 1 };
+};
+} // namespace worm::internal
 
 #endif

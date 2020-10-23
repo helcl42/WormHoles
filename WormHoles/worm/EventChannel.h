@@ -15,13 +15,13 @@ public:
     template <typename MessageType, typename EventHandlerType>
     static void Add(EventHandlerType& handler)
     {
-        internal::EventChannelQueue<MessageType>::GetInstance().Add(handler);
+        internal::EventChannelQueue<MessageType>::Instance().Add(handler);
     }
 
     template <typename MessageType, typename EventHandlerType>
     static void Remove(EventHandlerType& handler)
     {
-        internal::EventChannelQueue<MessageType>::GetInstance().Remove(handler);
+        internal::EventChannelQueue<MessageType>::Instance().Remove(handler);
     }
 
     template <typename MessageType>
@@ -29,20 +29,20 @@ public:
     {
         switch (dispatchType) {
         case DispatchType::ASYNC:
-            internal::EventChannelQueue<MessageType>::GetInstance().BroadcastAsync(message);
+            internal::EventChannelQueue<MessageType>::Instance().BroadcastAsync(message);
             break;
         case DispatchType::MAIN_THREAD:
-            internal::EventChannelQueue<MessageType>::GetInstance().BroadcastMainThread(message);
+            internal::EventChannelQueue<MessageType>::Instance().BroadcastMainThread(message);
             break;
         default:
-            internal::EventChannelQueue<MessageType>::GetInstance().Broadcast(message);
+            internal::EventChannelQueue<MessageType>::Instance().Broadcast(message);
             break;
         }
     }
 
     static void DispatchAll()
     {
-        internal::EventChannelQueueManager::GetInstance().BroadcastAll();
+        internal::EventChannelQueueManager::Instance().BroadcastAll();
     }
 
 private:

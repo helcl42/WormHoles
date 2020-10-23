@@ -16,3 +16,4 @@ SOURCE_GROUP("worm/internal" FILES ${WORM_HOLES_INTERNAL_SRC_LIST})
 add_library(${PROJECT_NAME} INTERFACE)
 
 set(CMAKE_CXX_STANDARD 17)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
