@@ -25,7 +25,7 @@ public:
     }
 
     template <typename MessageType>
-    static void Post(const MessageType& message, const DispatchType dispatchType)
+    static void Post(const MessageType& message, const DispatchType dispatchType = DispatchType::SYNC)
     {
         switch (dispatchType) {
         case DispatchType::ASYNC:
