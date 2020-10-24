@@ -5,9 +5,9 @@
 
 namespace worm {
 enum class DispatchType {
-    MAIN_THREAD,
     SYNC,
-    ASYNC
+    ASYNC,
+    QUEUED
 };
 
 class EventChannel final {
@@ -25,24 +25,24 @@ public:
     }
 
     template <typename MessageType>
-    static void Broadcast(const MessageType& message, const DispatchType dispatchType)
+    static void Post(const MessageType& message, const DispatchType dispatchType)
     {
         switch (dispatchType) {
         case DispatchType::ASYNC:
-            internal::EventChannelQueue<MessageType>::Instance().BroadcastAsync(message);
+            internal::EventChannelQueue<MessageType>::Instance().PostAsync(message);
             break;
-        case DispatchType::MAIN_THREAD:
-            internal::EventChannelQueue<MessageType>::Instance().BroadcastMainThread(message);
+        case DispatchType::QUEUED:
+            internal::EventChannelQueue<MessageType>::Instance().PostQueued(message);
             break;
         default:
-            internal::EventChannelQueue<MessageType>::Instance().Broadcast(message);
+            internal::EventChannelQueue<MessageType>::Instance().Post(message);
             break;
         }
     }
 
-    static void DispatchAll()
+    static void DispatchQueued()
     {
-        internal::EventChannelQueueManager::Instance().BroadcastAll();
+        internal::EventChannelQueueManager::Instance().DispatchAll();
     }
 
 private:

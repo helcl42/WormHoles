@@ -67,7 +67,7 @@ private:
         while (m_running) {
             m_statusString += m_buildingBlock;
 
-            worm::EventChannel::Broadcast(NotifyEvent{ m_name, m_statusString }, m_updateDispatchType);
+            worm::EventChannel::Post(NotifyEvent{ m_name, m_statusString }, m_updateDispatchType);
 
             std::this_thread::sleep_for(std::chrono::milliseconds(m_timeoutInMs));
         }
@@ -96,7 +96,7 @@ public:
         m_running = true;
         m_thread = std::thread(&SubSystem::Loop, this);
 
-        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been initialized" }, worm::DispatchType::SYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been initialized" }, worm::DispatchType::SYNC);
     }
 
     void Shutdown()
@@ -112,7 +112,7 @@ public:
             m_thread.join();
         }
 
-        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been shut down" }, worm::DispatchType::SYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been shut down" }, worm::DispatchType::SYNC);
     }
 
     bool IsRunning() const
@@ -137,7 +137,7 @@ private:
 
     std::atomic<bool> m_running;
 
-    const worm::DispatchType m_updateDispatchType{ worm::DispatchType::ASYNC };
+    const worm::DispatchType m_updateDispatchType{ worm::DispatchType::QUEUED };
 };
 
 class System {
@@ -147,14 +147,14 @@ public:
         m_subSystemX.Init();
         m_subSystemY.Init();
 
-        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been initialized" }, worm::DispatchType::SYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been initialized" }, worm::DispatchType::ASYNC);
     }
 
     void Update()
     {
         m_counter++;
 
-        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
     }
 
     void Shutdown()
@@ -162,13 +162,13 @@ public:
         m_subSystemY.Shutdown();
         m_subSystemX.Shutdown();
 
-        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been shut down" }, worm::DispatchType::SYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been shut down" }, worm::DispatchType::ASYNC);
     }
 
 public:
     void operator()(const NotifyEvent& notify)
     {
-        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System was notified by SubSystem " + notify.subSystemName + " about it's work progress \"" + notify.statusString + "\"" }, worm::DispatchType::SYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System was notified by SubSystem " + notify.subSystemName + " about it's work progress \"" + notify.statusString + "\"" }, worm::DispatchType::SYNC);
     }
 
 private:
@@ -193,7 +193,7 @@ int main(int argc, char** argv)
     system.Init();
 
     for (uint32_t i = 0; i < 50; i++) {
-        worm::EventChannel::DispatchAll();
+        worm::EventChannel::DispatchQueued();
 
         system.Update();
 

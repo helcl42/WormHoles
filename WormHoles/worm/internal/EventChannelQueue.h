@@ -33,7 +33,7 @@ public:
         m_originalPointers.erase(it);
     }
 
-    void Broadcast(const EventType& message)
+    void Post(const EventType& message)
     {
         std::vector<std::function<void(const EventType&)> > currentHandlersCopy;
 
@@ -48,14 +48,14 @@ public:
         }
     }
 
-    void BroadcastMainThread(const EventType& message)
+    void PostQueued(const EventType& message)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
 
         m_eventsToDeliver.emplace_back(message);
     }
 
-    void BroadcastAsync(const EventType& message)
+    void PostAsync(const EventType& message)
     {
         m_threadPool.Enqueue([this, message]() {
             std::vector<std::function<void(const EventType&)> > currentHandlersCopy;

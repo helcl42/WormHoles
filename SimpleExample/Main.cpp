@@ -53,7 +53,7 @@ public:
     void Init()
     {
         // ...
-        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been initialized" }, worm::DispatchType::SYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been initialized" }, worm::DispatchType::SYNC);
     }
 
     void Update()
@@ -61,13 +61,13 @@ public:
         // ...
         m_counter++;
         // ...
-        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
     }
 
     void Shutdown()
     {
         //...
-        worm::EventChannel::Broadcast(LogEvent{ Severity::INFO, "System has been shut down" }, worm::DispatchType::SYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been shut down" }, worm::DispatchType::SYNC);
     }
 
 private:

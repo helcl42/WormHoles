@@ -27,7 +27,7 @@ public:
         m_eventChannelQueues.erase(it);
     }
 
-    void BroadcastAll()
+    void DispatchAll()
     {
         std::vector<IEventChannelQueue*> queues;
 
