@@ -6,12 +6,9 @@
 namespace worm {
 template <typename EventHandlerType, typename EventType>
 class EventHandler final {
-private:
-    EventHandlerType& m_handlerInstance;
-
 public:
     EventHandler(EventHandlerType& instance)
-        : m_handlerInstance(instance)
+        : m_handlerInstance{ instance }
     {
         EventChannel::Add<EventType>(m_handlerInstance);
     }
@@ -29,6 +26,9 @@ public:
     EventHandler(EventHandler&& other) = default;
 
     EventHandler& operator=(EventHandler&& other) = default;
+
+private:
+    EventHandlerType& m_handlerInstance;
 };
 } // namespace worm
 

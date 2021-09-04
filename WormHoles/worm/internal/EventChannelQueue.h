@@ -22,13 +22,12 @@ public:
     {
         std::lock_guard<std::mutex> lock(m_mutex);
 
-        auto it = std::find(m_originalPointers.begin(), m_originalPointers.end(), &handler);
+        const auto it{ std::find(m_originalPointers.begin(), m_originalPointers.end(), &handler) };
         if (it == m_originalPointers.end()) {
             throw std::runtime_error("Tried to remove a handler that is not in the list");
         }
 
-        auto idx = (it - m_originalPointers.begin());
-
+        const auto idx{ it - m_originalPointers.begin() };
         m_handlers.erase(m_handlers.begin() + idx);
         m_originalPointers.erase(it);
     }
