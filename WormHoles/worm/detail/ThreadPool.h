@@ -9,7 +9,7 @@
 #include <thread>
 #include <vector>
 
-namespace worm::internal {
+namespace worm::detail {
 class ThreadPool {
 public:
     inline ThreadPool(const size_t threads)
@@ -92,6 +92,6 @@ private:
 
     std::atomic<bool> m_running;
 };
-} // namespace worm::internal
+} // namespace worm::detail
 
 #endif

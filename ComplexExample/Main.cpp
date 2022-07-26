@@ -61,18 +61,6 @@ struct NotifyEvent {
 };
 
 class SubSystem {
-private:
-    void Loop()
-    {
-        while (m_running) {
-            m_statusString += m_buildingBlock;
-
-            worm::EventChannel::Post(NotifyEvent{ m_name, m_statusString }, m_updateDispatchType);
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(m_timeoutInMs));
-        }
-    }
-
 public:
     SubSystem(const std::string& name, const std::string& buildingBlock, const uint64_t timeout)
         : m_name(name)
@@ -120,6 +108,18 @@ public:
         std::lock_guard<std::mutex> lock(m_mutex);
 
         return m_running;
+    }
+
+private:
+    void Loop()
+    {
+        while (m_running) {
+            m_statusString += m_buildingBlock;
+
+            worm::EventChannel::Post(NotifyEvent{ m_name, m_statusString }, m_updateDispatchType);
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(m_timeoutInMs));
+        }
     }
 
 private:

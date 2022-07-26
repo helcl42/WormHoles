@@ -4,7 +4,7 @@
 #include "EventChannelQueueManager.h"
 #include "ThreadPool.h"
 
-namespace worm::internal {
+namespace worm::detail {
 template <typename EventType>
 class EventChannelQueue final : public Singleton<EventChannelQueue<EventType> >, public IEventChannelQueue {
 public:
@@ -130,8 +130,8 @@ private:
 
     std::vector<EventType> m_eventsToDeliver;
 
-    internal::ThreadPool m_threadPool{ 1 };
+    ThreadPool m_threadPool{ 1 };
 };
-} // namespace worm::internal
+} // namespace worm::detail
 
 #endif

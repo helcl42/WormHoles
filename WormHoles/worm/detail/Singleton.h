@@ -1,7 +1,7 @@
 #ifndef __SINGLETON_H__
 #define __SINGLETON_H__
 
-namespace worm::internal {
+namespace worm::detail {
 template <typename ChildType>
 class Singleton {
 public:
@@ -34,6 +34,6 @@ private:
 
 template <typename ChildType>
 ChildType Singleton<ChildType>::s_instance;
-} // namespace worm::internal
+} // namespace worm::detail
 
 #endif

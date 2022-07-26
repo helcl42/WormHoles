@@ -9,7 +9,7 @@
 #include "IEventChannelQueue.h"
 #include "Singleton.h"
 
-namespace worm::internal {
+namespace worm::detail {
 class EventChannelQueueManager final : public Singleton<EventChannelQueueManager> {
 public:
     void Add(IEventChannelQueue& queue)
@@ -63,6 +63,6 @@ private:
 
     std::vector<IEventChannelQueue*> m_eventChannelQueues;
 };
-} // namespace worm::internal
+} // namespace worm::detail
 
 #endif // !__EVENT_CHANNEL_QUEUE_MANAGER_H__

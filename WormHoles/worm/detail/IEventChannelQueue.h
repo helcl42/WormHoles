@@ -1,7 +1,7 @@
 #ifndef __IEVENT_CHANNEL_QUEUE_H__
 #define __IEVENT_CHANNEL_QUEUE_H__
 
-namespace worm::internal {
+namespace worm::detail {
 class IEventChannelQueue {
 public:
     virtual void DispatchAll() = 0;
@@ -9,6 +9,6 @@ public:
 public:
     virtual ~IEventChannelQueue() = default;
 };
-} // namespace worm::internal
+} // namespace worm::detail
 
 #endif // !__IEVENT_CHANNEL_QUEUE_H__

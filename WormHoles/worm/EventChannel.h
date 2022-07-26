@@ -1,7 +1,7 @@
 #ifndef __EVENT_CHANNEL_H__
 #define __EVENT_CHANNEL_H__
 
-#include "internal/EventChannelQueue.h"
+#include "detail/EventChannelQueue.h"
 
 namespace worm {
 enum class DispatchType {
@@ -15,13 +15,13 @@ public:
     template <typename MessageType, typename EventHandlerType>
     static void Add(EventHandlerType& handler)
     {
-        internal::EventChannelQueue<MessageType>::Instance().Add(handler);
+        detail::EventChannelQueue<MessageType>::Instance().Add(handler);
     }
 
     template <typename MessageType, typename EventHandlerType>
     static void Remove(EventHandlerType& handler)
     {
-        internal::EventChannelQueue<MessageType>::Instance().Remove(handler);
+        detail::EventChannelQueue<MessageType>::Instance().Remove(handler);
     }
 
     template <typename MessageType>
@@ -29,20 +29,20 @@ public:
     {
         switch (dispatchType) {
         case DispatchType::ASYNC:
-            internal::EventChannelQueue<MessageType>::Instance().PostAsync(message);
+            detail::EventChannelQueue<MessageType>::Instance().PostAsync(message);
             break;
         case DispatchType::QUEUED:
-            internal::EventChannelQueue<MessageType>::Instance().PostQueued(message);
+            detail::EventChannelQueue<MessageType>::Instance().PostQueued(message);
             break;
         default:
-            internal::EventChannelQueue<MessageType>::Instance().Post(message);
+            detail::EventChannelQueue<MessageType>::Instance().Post(message);
             break;
         }
     }
 
     static void DispatchQueued()
     {
-        internal::EventChannelQueueManager::Instance().DispatchAll();
+        detail::EventChannelQueueManager::Instance().DispatchAll();
     }
 
 private:
