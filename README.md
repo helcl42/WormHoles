@@ -10,8 +10,8 @@ WormHoles is a multiplatform header-only library implementing a general and thre
 
 
 ### Overview
-It is all basicaly about dispatching messages/events through a system and between it's components. A event can be any copyable C++ object.
-Currently it provides three dispatch options. The usable core of the library is based only on two constructs. The former allows you dispatch an event using calling of `worm::EventChannel::Broadcast(<AN_EVENT>, <DISPATCH_TYPE>);` the latter one is all about handling thoose broadcasted events by adding following  like property `worm::EventHandler< <HANDLER_REFERENCE_TYPE> , <EVENT_TYPE > m_notifyEventsHandler{ <HANDLER_REFERENCE> };` and a handler function `void operator()(const <EVENT_TYPE>& evt)`.
+This project is all about dispatching messages/events through a system and between it's components. A event can be any copyable C++ object.
+Currently it supports three dispatch options. The msin core of the library is based only on two constructs - broadcasting and handling. The former allows you dispatch an event by calling of `worm::EventChannel::Broadcast(<AN_EVENT>, <DISPATCH_TYPE>);` the latter one is all about handling broadcasted events by adding following member `worm::EventHandler< <HANDLER_REFERENCE_TYPE> , <EVENT_TYPE > m_notifyEventsHandler{ <HANDLER_REFERENCE> };` and a handler function `void operator()(const <EVENT_TYPE>& evt)`.
 
  - `SYNC` - Event is dispatched directly within the current thread(the default one).
  - `ASYNC` - Event is dispatched on another thread from internal threadpool. It might prevent you from long blocking in event handlers.
@@ -24,6 +24,11 @@ In the project there are two examples simple and a bit more complex. For more se
 - Run `cd build`
 - Run `cmake ..`
 
+## TODO
+
+ - ! FIX - handlers lifecycle !
+ - ! FIX - make tests !
+ - ! FEAT - move to lock-free !
 
 ## Examples
 ### Simple Example
@@ -199,24 +204,12 @@ struct NotifyEvent {
 };
 
 class SubSystem {
-private:
-    void Loop()
-    {
-        while (m_running) {
-            m_statusString += m_buildingBlock;
-
-            worm::EventChannel::Post(NotifyEvent{ m_name, m_statusString }, m_updateDispatchType);
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(m_timeoutInMs));
-        }
-    }
-
 public:
     SubSystem(const std::string& name, const std::string& buildingBlock, const uint64_t timeout)
-        : m_name(name)
-        , m_buildingBlock(buildingBlock)
-        , m_timeoutInMs(timeout)
-        , m_running(false)
+        : m_name{ name }
+        , m_buildingBlock{ buildingBlock }
+        , m_timeoutInMs{ timeout }
+        , m_running{ false }
     {
     }
 
@@ -225,7 +218,7 @@ public:
 public:
     void Init()
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
         if (m_running) {
             return;
@@ -239,7 +232,7 @@ public:
 
     void Shutdown()
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
         if (!m_running) {
             return;
@@ -255,9 +248,21 @@ public:
 
     bool IsRunning() const
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
         return m_running;
+    }
+
+private:
+    void Loop()
+    {
+        while (m_running) {
+            m_statusString += m_buildingBlock;
+
+            worm::EventChannel::Post(NotifyEvent{ m_name, m_statusString }, m_updateDispatchType);
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(m_timeoutInMs));
+        }
     }
 
 private:
@@ -342,10 +347,3 @@ int main(int argc, char** argv)
 
     return 0;
 }
-```
-
-
-## TODO
-
- - ! make tests !
-
