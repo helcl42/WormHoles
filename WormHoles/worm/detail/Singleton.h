@@ -10,7 +10,8 @@ public:
 public:
     static ChildType& Instance()
     {
-        return s_instance;
+        static ChildType instance{};
+        return instance;
     }
 
 private:
@@ -27,13 +28,7 @@ private:
 
 private:
     friend ChildType;
-
-private:
-    static ChildType s_instance;
 };
-
-template <typename ChildType>
-ChildType Singleton<ChildType>::s_instance;
 } // namespace worm::detail
 
 #endif

@@ -63,10 +63,10 @@ struct NotifyEvent {
 class SubSystem {
 public:
     SubSystem(const std::string& name, const std::string& buildingBlock, const uint64_t timeout)
-        : m_name(name)
-        , m_buildingBlock(buildingBlock)
-        , m_timeoutInMs(timeout)
-        , m_running(false)
+        : m_name{ name }
+        , m_buildingBlock{ buildingBlock }
+        , m_timeoutInMs{ timeout }
+        , m_running{ false }
     {
     }
 
@@ -75,7 +75,7 @@ public:
 public:
     void Init()
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
         if (m_running) {
             return;
@@ -89,7 +89,7 @@ public:
 
     void Shutdown()
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
         if (!m_running) {
             return;
@@ -105,7 +105,7 @@ public:
 
     bool IsRunning() const
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
         return m_running;
     }

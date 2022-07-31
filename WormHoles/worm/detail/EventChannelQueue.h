@@ -11,7 +11,7 @@ public:
     template <typename EventHandlerType>
     void Add(EventHandlerType& handler)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
         m_handlers.emplace_back(CreateHandler(handler));
         m_originalPointers.emplace_back(&handler);
@@ -20,7 +20,7 @@ public:
     template <typename EventHandlerType>
     void Remove(EventHandlerType& handler)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
         const auto it{ std::find(m_originalPointers.begin(), m_originalPointers.end(), &handler) };
         if (it == m_originalPointers.end()) {
@@ -37,7 +37,7 @@ public:
         std::vector<std::function<void(const EventType&)> > currentHandlersCopy;
 
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
+            std::scoped_lock<std::mutex> lock{ m_mutex };
 
             currentHandlersCopy = m_handlers;
         }
@@ -49,7 +49,7 @@ public:
 
     void PostQueued(const EventType& message)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
         m_eventsToDeliver.emplace_back(message);
     }
@@ -60,7 +60,7 @@ public:
             std::vector<std::function<void(const EventType&)> > currentHandlersCopy;
 
             {
-                std::lock_guard<std::mutex> lock(this->m_mutex);
+                std::scoped_lock<std::mutex> lock{ this->m_mutex };
                 currentHandlersCopy = m_handlers;
             }
 
@@ -76,7 +76,7 @@ public:
         std::vector<EventType> currentUnsendMessages;
 
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
+            std::scoped_lock<std::mutex> lock{ m_mutex };
 
             currentHandlersCopy = m_handlers;
             currentUnsendMessages = m_eventsToDeliver;

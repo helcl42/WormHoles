@@ -14,14 +14,14 @@ class EventChannelQueueManager final : public Singleton<EventChannelQueueManager
 public:
     void Add(IEventChannelQueue& queue)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
         m_eventChannelQueues.emplace_back(&queue);
     }
 
     void Remove(IEventChannelQueue& queue)
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
         auto it = std::find(m_eventChannelQueues.cbegin(), m_eventChannelQueues.cend(), &queue);
         m_eventChannelQueues.erase(it);
@@ -32,7 +32,7 @@ public:
         std::vector<IEventChannelQueue*> queues;
 
         {
-            std::lock_guard<std::mutex> lock(m_mutex);
+            std::scoped_lock<std::mutex> lock{ m_mutex };
             queues = m_eventChannelQueues;
         }
 
