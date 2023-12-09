@@ -17,7 +17,10 @@ file(GLOB SIMPLE_EXAMPLE_SRC_LIST
 
 add_executable(${PROJECT_NAME} ${SIMPLE_EXAMPLE_SRC_LIST})
 
+# testing
+enable_testing()
 
+add_test(NAME SimpleDefaultTest COMMAND $<TARGET_FILE:${PROJECT_NAME}>)
 
 
 

@@ -1,7 +1,6 @@
 #include <chrono>
 #include <iostream>
 #include <string>
-#include <thread>
 
 #include <worm/EventChannel.h>
 #include <worm/EventHandler.h>
@@ -87,8 +86,6 @@ int main(int argc, char** argv)
 
     for (uint32_t i = 0; i < 50; i++) {
         system.Update();
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     system.Shutdown();

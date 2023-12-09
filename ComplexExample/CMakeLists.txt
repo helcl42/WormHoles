@@ -17,7 +17,7 @@ file(GLOB COMPLEX_EXAMPLE_SRC_LIST
 
 add_executable(${PROJECT_NAME} ${COMPLEX_EXAMPLE_SRC_LIST})
 
+# testing
+enable_testing()
 
-
-
-
+add_test(NAME ComplexDefaultTest COMMAND $<TARGET_FILE:${PROJECT_NAME}>)
