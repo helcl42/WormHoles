@@ -14,7 +14,8 @@ The project has two examples: simple and a bit more complex. For more info, see 
 
 ### Build instructions
 - Run `mkdir build && cd build`
-- Run `cmake ..`
+- Run `cmake -G Ninja ..`
+- Run `ninja`
 
 ### TODO
  - ! FIX - make tests !
