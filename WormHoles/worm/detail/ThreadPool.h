@@ -63,7 +63,7 @@ public:
     {
         using return_type = std::invoke_result_t<F, Args...>;
 
-        auto task = std::make_shared<std::packaged_task<return_type()> >(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+        auto task = std::make_shared<std::packaged_task<return_type()>>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
 
         std::future<return_type> res = task->get_future();
         {
@@ -86,7 +86,7 @@ private:
 
     std::vector<std::thread> m_workers;
 
-    std::queue<std::function<void()> > m_tasks;
+    std::queue<std::function<void()>> m_tasks;
 
     std::mutex m_queueMutex;
 
