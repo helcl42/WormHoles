@@ -29,14 +29,9 @@ public:
 
     void DispatchAll()
     {
-        std::vector<IEventChannelQueue*> queues;
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
-        {
-            std::scoped_lock<std::mutex> lock{ m_mutex };
-            queues = m_eventChannelQueues;
-        }
-
-        for (auto& queue : queues) {
+        for (auto& queue : m_eventChannelQueues) {
             queue->DispatchAll();
         }
     }

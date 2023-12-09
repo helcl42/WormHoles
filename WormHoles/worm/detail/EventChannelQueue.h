@@ -6,7 +6,7 @@
 
 namespace worm::detail {
 template <typename EventType>
-class EventChannelQueue final : public Singleton<EventChannelQueue<EventType> >, public IEventChannelQueue {
+class EventChannelQueue final : public Singleton<EventChannelQueue<EventType>>, public IEventChannelQueue {
 public:
     template <typename EventHandlerType>
     void Add(EventHandlerType& handler)
@@ -34,15 +34,9 @@ public:
 
     void Post(const EventType& message)
     {
-        std::vector<std::function<void(const EventType&)> > currentHandlersCopy;
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
-        {
-            std::scoped_lock<std::mutex> lock{ m_mutex };
-
-            currentHandlersCopy = m_handlers;
-        }
-
-        for (const auto& handler : currentHandlersCopy) {
+        for (const auto& handler : m_handlers) {
             handler(message);
         }
     }
@@ -57,12 +51,8 @@ public:
     void PostAsync(const EventType& message)
     {
         m_threadPool.Enqueue([this, message]() {
-            std::vector<std::function<void(const EventType&)> > currentHandlersCopy;
-
-            {
-                std::scoped_lock<std::mutex> lock{ this->m_mutex };
-                currentHandlersCopy = m_handlers;
-            }
+            // TODO: this is very bad!
+            std::scoped_lock<std::mutex> lock{ this->m_mutex };
 
             for (const auto& handler : m_handlers) {
                 handler(message);
@@ -72,27 +62,20 @@ public:
 
     void DispatchAll() override
     {
-        std::vector<std::function<void(const EventType&)> > currentHandlersCopy;
-        std::vector<EventType> currentUnsendMessages;
+        std::scoped_lock<std::mutex> lock{ m_mutex };
 
-        {
-            std::scoped_lock<std::mutex> lock{ m_mutex };
-
-            currentHandlersCopy = m_handlers;
-            currentUnsendMessages = m_eventsToDeliver;
-            m_eventsToDeliver.clear();
-        }
-
-        for (const auto& message : currentUnsendMessages) {
-            for (const auto& handler : currentHandlersCopy) {
+        for (const auto& message : m_eventsToDeliver) {
+            for (const auto& handler : m_handlers) {
                 handler(message);
             }
         }
+
+        m_eventsToDeliver.clear();
     }
 
 private:
     EventChannelQueue()
-        : Singleton<EventChannelQueue<EventType> >()
+        : Singleton<EventChannelQueue<EventType>>()
     {
         EventChannelQueueManager::Instance().Add(*this);
     }
@@ -119,12 +102,12 @@ private:
     }
 
 private:
-    friend class Singleton<EventChannelQueue<EventType> >;
+    friend class Singleton<EventChannelQueue<EventType>>;
 
 private:
     std::mutex m_mutex;
 
-    std::vector<std::function<void(const EventType&)> > m_handlers;
+    std::vector<std::function<void(const EventType&)>> m_handlers;
 
     std::vector<void*> m_originalPointers;
 
