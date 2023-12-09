@@ -1,6 +1,7 @@
 # WormHoles
 WormHoles is a multiplatform header-only library implementing a general and threadsafe event bus.
 
+[![CI Build/Test](https://github.com/helcl42/WormHoles/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/helcl42/WormHoles/actions/workflows/cmake-multi-platform.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/7b1086bbeed54aeca21d2c6db6fa7d54)](https://app.codacy.com/gh/helcl42/WormHoles/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 ### Overview
