@@ -1,5 +1,4 @@
 # WormHoles
-
 WormHoles is a multiplatform header-only library implementing a general and threadsafe event bus.
 
 ### Overview
