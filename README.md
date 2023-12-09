@@ -4,6 +4,8 @@ WormHoles is a multiplatform header-only library implementing a general and thre
 [![CI Build/Test](https://github.com/helcl42/WormHoles/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/helcl42/WormHoles/actions/workflows/cmake-multi-platform.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/7b1086bbeed54aeca21d2c6db6fa7d54)](https://app.codacy.com/gh/helcl42/WormHoles/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
+![WormHoles]("./WormHoles.drawio.svg")
+
 ### Overview
 This project is about dispatching messages/events through a system and between its components. An event can be any copyable C++ object.
 Currently, it supports three dispatch options. The library's core is based only on two constructs - broadcasting and handling. The former allows you dispatch an event by calling of `worm::EventChannel::Broadcast(<AN_EVENT>, <DISPATCH_TYPE>);` the latter one is all about handling broadcasted events by adding following member `worm::EventHandler< <HANDLER_REFERENCE_TYPE> , <EVENT_TYPE> > m_notifyEventsHandler{ <HANDLER_REFERENCE> };` and a handle function `void operator()(const <EVENT_TYPE>& evt)`.
