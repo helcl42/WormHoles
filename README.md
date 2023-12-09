@@ -2,38 +2,28 @@
 
 WormHoles is a multiplatform header-only library implementing a general and threadsafe event bus.
 
-### Build status 
-| Platform         | Status |
-|:----------------:|:------------:|
-| Windows          | [![Build status](https://ci.appveyor.com/api/projects/status/qo2sdot4gifga5ux?svg=true)](https://ci.appveyor.com/project/helcl42/wormholes) |
-| Linux | [![Linux Build Status](https://travis-ci.org/helcl42/WormHoles.svg?branch=master)](https://travis-ci.org/helcl42/WormHoles "Linux Build Status") |
-
-
 ### Overview
-This project is all about dispatching messages/events through a system and between it's components. A event can be any copyable C++ object.
-Currently it supports three dispatch options. The msin core of the library is based only on two constructs - broadcasting and handling. The former allows you dispatch an event by calling of `worm::EventChannel::Broadcast(<AN_EVENT>, <DISPATCH_TYPE>);` the latter one is all about handling broadcasted events by adding following member `worm::EventHandler< <HANDLER_REFERENCE_TYPE> , <EVENT_TYPE > m_notifyEventsHandler{ <HANDLER_REFERENCE> };` and a handler function `void operator()(const <EVENT_TYPE>& evt)`.
+This project is about dispatching messages/events through a system and between its components. An event can be any copyable C++ object.
+Currently, it supports three dispatch options. The library's core is based only on two constructs - broadcasting and handling. The former allows you dispatch an event by calling of `worm::EventChannel::Broadcast(<AN_EVENT>, <DISPATCH_TYPE>);` the latter one is all about handling broadcasted events by adding following member `worm::EventHandler< <HANDLER_REFERENCE_TYPE> , <EVENT_TYPE > m_notifyEventsHandler{ <HANDLER_REFERENCE> };` and a handle function `void operator()(const <EVENT_TYPE>& evt)`.
 
- - `SYNC` - Event is dispatched directly within the current thread(the default one).
- - `ASYNC` - Event is dispatched on another thread from internal threadpool. It might prevent you from long blocking in event handlers.
- - `QUEUED` - Event is dispatched when `worm::EventChannel::DispatchAll();` is called. It might be somewhere at the beginning of your main loop. It might prevent you from coslty locking. You might not use `QUEUED` way of dispatch so you simply omit the call `worm::EventChannel::DispatchAll();`
+ - `SYNC` - The event is dispatched directly within the current thread(the default one).
+ - `ASYNC` - The event is dispatched on another thread from the internal thread pool. It might prevent you from long blocking in event handlers, which is currently a suboptimal solution.
+ - `QUEUED` - The event is dispatched when `worm::EventChannel::DispatchAll();` is called. It might be somewhere at the beginning of your main loop. It might prevent you from costly locking. You might not use `QUEUED` way of dispatch so you omit the call `worm::EventChannel::DispatchAll();`
 
-In the project there are two examples simple and a bit more complex. For more see the sections below.
+The project has two examples: simple and a bit more complex. For more info, see the sections below.
 
 ### Build instructions
-- Run `mkdir build`
-- Run `cd build`
+- Run `mkdir build && cd build`
 - Run `cmake ..`
 
-## TODO
-
- - ! FIX - handlers lifecycle !
+### TODO
  - ! FIX - make tests !
- - ! FEAT - move to lock-free !
+ - ! OPT - the `ASYNC` way!
 
 ## Examples
 ### Simple Example
 
-This example shows how to create a lousy coupled Logger. No compomnents touch `Logger` or `NetworkLogger` directly they just post an event to `EventChannel` like System class does.
+This example shows how to create a lousy coupled Logger. No comments touch `Logger` or `NetworkLogger` directly. They post an event to `EventChannel` as the System class does.
 
 ```cpp
 #include <chrono>
@@ -137,7 +127,7 @@ int main(int argc, char** argv)
 
 ### "Complex" Example
 
-This example shows a bit more advanced usage of `WormHoles` library. There are a main `System` that starts two quite independently running `SubSystem`s. `SubSystem` instances have their own working loop threads and once they make a progress with their work they notify the main `System` and it generates some `LogEvent` to let user about it's progress/state.
+This example shows a bit more advanced usage of `WormHoles` library. There is a main `System` that starts two quite independently running `Subsystem`s. `SubSystem` instances have their working loop threads, and once they make progress with their work, they notify the main `System`, and it generates some `LogEvent` to let the user know about its progress/state.
 
 
 ```cpp
