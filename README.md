@@ -6,7 +6,7 @@ WormHoles is a multiplatform header-only library implementing a general and thre
 
 ### Overview
 This project is about dispatching messages/events through a system and between its components. An event can be any copyable C++ object.
-Currently, it supports three dispatch options. The library's core is based only on two constructs - broadcasting and handling. The former allows you dispatch an event by calling of `worm::EventChannel::Broadcast(<AN_EVENT>, <DISPATCH_TYPE>);` the latter one is all about handling broadcasted events by adding following member `worm::EventHandler< <HANDLER_REFERENCE_TYPE> , <EVENT_TYPE> m_notifyEventsHandler{ <HANDLER_REFERENCE> };` and a handle function `void operator()(const <EVENT_TYPE>& evt)`.
+Currently, it supports three dispatch options. The library's core is based only on two constructs - broadcasting and handling. The former allows you dispatch an event by calling of `worm::EventChannel::Broadcast(<AN_EVENT>, <DISPATCH_TYPE>);` the latter one is all about handling broadcasted events by adding following member `worm::EventHandler< <HANDLER_REFERENCE_TYPE> , <EVENT_TYPE> > m_notifyEventsHandler{ <HANDLER_REFERENCE> };` and a handle function `void operator()(const <EVENT_TYPE>& evt)`.
 
  - `SYNC` - The event is dispatched directly within the current thread(the default one).
  - `ASYNC` - The event is dispatched on another thread from the internal thread pool. It might prevent you from long blocking in event handlers, which is currently a suboptimal solution.
