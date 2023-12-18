@@ -11,7 +11,7 @@ public:
     template <typename EventHandlerType>
     void Add(EventHandlerType& handler)
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         m_handlers.emplace_back(CreateHandler(handler));
         m_originalPointers.emplace_back(&handler);
@@ -20,7 +20,7 @@ public:
     template <typename EventHandlerType>
     void Remove(EventHandlerType& handler)
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         const auto it{ std::find(m_originalPointers.begin(), m_originalPointers.end(), &handler) };
         if (it == m_originalPointers.end()) {
@@ -34,7 +34,7 @@ public:
 
     void Post(const EventType& message)
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::shared_lock lock{ m_mutex };
 
         for (const auto& handler : m_handlers) {
             handler(message);
@@ -43,7 +43,7 @@ public:
 
     void PostQueued(const EventType& message)
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         m_eventsToDeliver.emplace_back(message);
     }
@@ -51,8 +51,7 @@ public:
     void PostAsync(const EventType& message)
     {
         m_threadPool.Enqueue([this, message]() {
-            // TODO: this is very bad!
-            std::scoped_lock<std::mutex> lock{ this->m_mutex };
+            std::shared_lock lock{ this->m_mutex };
 
             for (const auto& handler : m_handlers) {
                 handler(message);
@@ -62,7 +61,7 @@ public:
 
     void DispatchAll() override
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::shared_lock lock{ m_mutex };
 
         for (const auto& message : m_eventsToDeliver) {
             for (const auto& handler : m_handlers) {
@@ -105,7 +104,7 @@ private:
     friend class Singleton<EventChannelQueue<EventType>>;
 
 private:
-    std::mutex m_mutex;
+    std::shared_mutex m_mutex;
 
     std::vector<std::function<void(const EventType&)>> m_handlers;
 

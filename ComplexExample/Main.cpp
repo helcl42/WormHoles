@@ -1,12 +1,12 @@
+#include <worm/EventChannel.h>
+#include <worm/EventHandler.h>
+
 #include <atomic>
 #include <chrono>
 #include <iostream>
 #include <mutex>
 #include <string>
 #include <thread>
-
-#include <worm/EventChannel.h>
-#include <worm/EventHandler.h>
 
 enum class Severity {
     LOG,
@@ -75,7 +75,7 @@ public:
 public:
     void Init()
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         if (m_running) {
             return;
@@ -89,7 +89,7 @@ public:
 
     void Shutdown()
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         if (!m_running) {
             return;
@@ -105,7 +105,7 @@ public:
 
     bool IsRunning() const
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         return m_running;
     }
@@ -152,7 +152,7 @@ public:
 
     void Update()
     {
-        m_counter++;
+        ++m_counter;
 
         worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
     }
@@ -192,7 +192,7 @@ int main(int argc, char** argv)
 
     system.Init();
 
-    for (uint32_t i = 0; i < 50; i++) {
+    for (uint32_t i = 0; i < 50; ++i) {
         worm::EventChannel::DispatchQueued();
 
         system.Update();

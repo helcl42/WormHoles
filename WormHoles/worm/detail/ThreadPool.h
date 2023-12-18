@@ -22,7 +22,7 @@ public:
                         std::function<void()> task;
 
                         {
-                            std::unique_lock<std::mutex> lock{ this->m_queueMutex };
+                            std::unique_lock lock{ this->m_queueMutex };
 
                             this->m_runningCondition.wait(lock,
                                 [this] {
@@ -46,7 +46,7 @@ public:
     inline ~ThreadPool()
     {
         {
-            std::scoped_lock<std::mutex> lock{ m_queueMutex };
+            std::scoped_lock lock{ m_queueMutex };
             m_running = false;
         }
 
@@ -67,7 +67,7 @@ public:
 
         std::future<return_type> res = task->get_future();
         {
-            std::scoped_lock<std::mutex> lock{ m_queueMutex };
+            std::scoped_lock lock{ m_queueMutex };
 
             if (!m_running) {
                 throw std::runtime_error("Enqueue on not running ThreadPool");

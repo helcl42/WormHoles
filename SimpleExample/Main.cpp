@@ -1,9 +1,9 @@
+#include <worm/EventChannel.h>
+#include <worm/EventHandler.h>
+
 #include <chrono>
 #include <iostream>
 #include <string>
-
-#include <worm/EventChannel.h>
-#include <worm/EventHandler.h>
 
 enum class Severity {
     LOG,
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 
     system.Init();
 
-    for (uint32_t i = 0; i < 50; i++) {
+    for (uint32_t i = 0; i < 50; ++i) {
         system.Update();
     }
 

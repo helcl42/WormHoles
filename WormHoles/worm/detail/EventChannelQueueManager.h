@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <functional>
-#include <mutex>
+#include <shared_mutex>
 #include <vector>
 
 #include "IEventChannelQueue.h"
@@ -14,14 +14,14 @@ class EventChannelQueueManager final : public Singleton<EventChannelQueueManager
 public:
     void Add(IEventChannelQueue& queue)
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         m_eventChannelQueues.emplace_back(&queue);
     }
 
     void Remove(IEventChannelQueue& queue)
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         auto it = std::find(m_eventChannelQueues.cbegin(), m_eventChannelQueues.cend(), &queue);
         m_eventChannelQueues.erase(it);
@@ -29,7 +29,7 @@ public:
 
     void DispatchAll()
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::shared_lock lock{ m_mutex };
 
         for (auto& queue : m_eventChannelQueues) {
             queue->DispatchAll();
@@ -54,7 +54,7 @@ private:
     friend class Singleton<EventChannelQueueManager>;
 
 private:
-    std::mutex m_mutex;
+    std::shared_mutex m_mutex;
 
     std::vector<IEventChannelQueue*> m_eventChannelQueues;
 };

@@ -23,7 +23,6 @@ The project has two examples: simple and a bit more complex. For more info, see 
 
 ### TODO
  - ! FIX - make tests !
- - ! OPT - the `ASYNC` way !
 
 ## Examples
 ### Simple Example
@@ -210,7 +209,7 @@ public:
 public:
     void Init()
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         if (m_running) {
             return;
@@ -224,7 +223,7 @@ public:
 
     void Shutdown()
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         if (!m_running) {
             return;
@@ -240,7 +239,7 @@ public:
 
     bool IsRunning() const
     {
-        std::scoped_lock<std::mutex> lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         return m_running;
     }
