@@ -25,17 +25,18 @@ The project has two examples: simple and a bit more complex. For more info, see 
  - ! FIX - make tests !
 
 ## Examples
-### Simple Example
+### Example 1
 
 This example shows how to create a lousy coupled Logger. No comments touch `Logger` or `NetworkLogger` directly. They post an event to `EventChannel` as the System class does.
 
 ```cpp
+#include <worm/EventChannel.h>
+#include <worm/EventHandler.h>
+
 #include <chrono>
 #include <iostream>
 #include <string>
-
-#include <worm/EventChannel.h>
-#include <worm/EventHandler.h>
+#include <thread>
 
 enum class Severity {
     LOG,
@@ -108,16 +109,18 @@ private:
 int main(int argc, char** argv)
 {
     // There is no coupling between System and loggers.
-    Logger logger;
-    NetworkLogger networkLogger;
+    Logger logger{};
+    NetworkLogger networkLogger{};
 
     // the System instance depends on EventChannel and LogEvent(sample code only is taken in account)
-    System system;
+    System system{};
 
     system.Init();
 
-    for (uint32_t i = 0; i < 50; i++) {
+    for (uint32_t i = 0; i < 50; ++i) {
         system.Update();
+
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
 
     system.Shutdown();
@@ -126,21 +129,21 @@ int main(int argc, char** argv)
 }
 ```
 
-### "Complex" Example
+### Example 2
 
 This example shows a bit more advanced usage of `WormHoles` library. There is a main `System` that starts two quite independently running `Subsystem`s. `SubSystem` instances have their working loop threads, and once they make progress with their work, they notify the main `System`, and it generates some `LogEvent` to let the user know about its progress/state.
 
 
 ```cpp
+#include <worm/EventChannel.h>
+#include <worm/EventHandler.h>
+
 #include <atomic>
 #include <chrono>
 #include <iostream>
 #include <mutex>
 #include <string>
 #include <thread>
-
-#include <worm/EventChannel.h>
-#include <worm/EventHandler.h>
 
 enum class Severity {
     LOG,
@@ -286,7 +289,7 @@ public:
 
     void Update()
     {
-        m_counter++;
+        ++m_counter;
 
         worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
     }
@@ -319,14 +322,14 @@ private:
 int main(int argc, char** argv)
 {
     // There is no coupling between System, SubSystem and loggers.
-    StdOutLogger logger;
-    NetworkLogger networkLogger;
+    StdOutLogger logger{};
+    NetworkLogger networkLogger{};
 
-    System system;
+    System system{};
 
     system.Init();
 
-    for (uint32_t i = 0; i < 50; i++) {
+    for (uint32_t i = 0; i < 50; ++i) {
         worm::EventChannel::DispatchQueued();
 
         system.Update();
@@ -338,3 +341,4 @@ int main(int argc, char** argv)
 
     return 0;
 }
+```
