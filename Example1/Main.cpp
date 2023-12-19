@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <thread>
 
 enum class Severity {
     LOG,
@@ -76,16 +77,18 @@ private:
 int main(int argc, char** argv)
 {
     // There is no coupling between System and loggers.
-    Logger logger;
-    NetworkLogger networkLogger;
+    Logger logger{};
+    NetworkLogger networkLogger{};
 
     // the System instance depends on EventChannel and LogEvent(sample code only is taken in account)
-    System system;
+    System system{};
 
     system.Init();
 
     for (uint32_t i = 0; i < 50; ++i) {
         system.Update();
+
+        std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
 
     system.Shutdown();

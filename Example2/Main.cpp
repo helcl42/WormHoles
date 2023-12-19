@@ -185,10 +185,10 @@ private:
 int main(int argc, char** argv)
 {
     // There is no coupling between System, SubSystem and loggers.
-    StdOutLogger logger;
-    NetworkLogger networkLogger;
+    StdOutLogger logger{};
+    NetworkLogger networkLogger{};
 
-    System system;
+    System system{};
 
     system.Init();
 

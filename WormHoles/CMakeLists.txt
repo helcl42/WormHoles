@@ -9,7 +9,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(DCMAKE_CXX_EXTENSIONS OFF)
 
 include_directories("${PROJECT_SOURCE_DIR}")
-include_directories("./WormHoles")
 
 file(GLOB WORM_HOLES_SRC_LIST 
 	"worm/*.h" "worm/*.cpp"
