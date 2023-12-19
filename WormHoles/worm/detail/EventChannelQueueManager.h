@@ -1,13 +1,14 @@
 #ifndef __EVENT_CHANNEL_QUEUE_MANAGER_H__
 #define __EVENT_CHANNEL_QUEUE_MANAGER_H__
 
-#include <algorithm>
-#include <functional>
-#include <shared_mutex>
-#include <vector>
-
 #include "IEventChannelQueue.h"
 #include "Singleton.h"
+
+#include <algorithm>
+#include <functional>
+#include <mutex>
+#include <shared_mutex>
+#include <vector>
 
 namespace worm::detail {
 class EventChannelQueueManager final : public Singleton<EventChannelQueueManager> {
