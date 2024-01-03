@@ -1,5 +1,5 @@
-#ifndef __IEVENT_CHANNEL_QUEUE_H__
-#define __IEVENT_CHANNEL_QUEUE_H__
+#ifndef __WH_IEVENT_CHANNEL_QUEUE_H__
+#define __WH_IEVENT_CHANNEL_QUEUE_H__
 
 namespace worm::detail {
 class IEventChannelQueue {

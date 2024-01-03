@@ -1,5 +1,5 @@
-#ifndef __EVENT_CHANNEL_H__
-#define __EVENT_CHANNEL_H__
+#ifndef __WH_EVENT_CHANNEL_H__
+#define __WH_EVENT_CHANNEL_H__
 
 #include "detail/EventChannelQueue.h"
 

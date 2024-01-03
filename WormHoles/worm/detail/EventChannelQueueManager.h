@@ -1,5 +1,5 @@
-#ifndef __EVENT_CHANNEL_QUEUE_MANAGER_H__
-#define __EVENT_CHANNEL_QUEUE_MANAGER_H__
+#ifndef __WH_EVENT_CHANNEL_QUEUE_MANAGER_H__
+#define __WH_EVENT_CHANNEL_QUEUE_MANAGER_H__
 
 #include "IEventChannelQueue.h"
 #include "Singleton.h"

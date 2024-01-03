@@ -1,5 +1,5 @@
-#ifndef __EVENT_CHANNEL_QUEUE_H__
-#define __EVENT_CHANNEL_QUEUE_H__
+#ifndef __WH_EVENT_CHANNEL_QUEUE_H__
+#define __WH_EVENT_CHANNEL_QUEUE_H__
 
 #include "EventChannelQueueManager.h"
 #include "ThreadPool.h"

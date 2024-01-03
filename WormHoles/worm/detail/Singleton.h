@@ -1,5 +1,5 @@
-#ifndef __SINGLETON_H__
-#define __SINGLETON_H__
+#ifndef __WH_SINGLETON_H__
+#define __WH_SINGLETON_H__
 
 namespace worm::detail {
 template <typename ChildType>

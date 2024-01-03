@@ -1,5 +1,5 @@
-#ifndef __THREAD_POOL_H__
-#define __THREAD_POOL_H__
+#ifndef __WH_THREAD_POOL_H__
+#define __WH_THREAD_POOL_H__
 
 #include <condition_variable>
 #include <functional>
