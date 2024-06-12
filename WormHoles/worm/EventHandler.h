@@ -19,9 +19,9 @@ public:
     }
 
 public:
-    EventHandler(const EventHandler& other) = default;
+    EventHandler(const EventHandler& other) = delete;
 
-    EventHandler& operator=(const EventHandler& other) = default;
+    EventHandler& operator=(const EventHandler& other) = delete;
 
     EventHandler(EventHandler&& other) = default;
 
