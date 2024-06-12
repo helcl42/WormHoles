@@ -24,7 +24,10 @@ public:
     {
         std::scoped_lock lock{ m_mutex };
 
-        auto it = std::find(m_eventChannelQueues.cbegin(), m_eventChannelQueues.cend(), &queue);
+        auto it{ std::find(m_eventChannelQueues.cbegin(), m_eventChannelQueues.cend(), &queue) };
+        if (it == m_eventChannelQueues.end()) {
+            throw std::runtime_error("Tried to remove an event channel queue that is not in the list.");
+        }
         m_eventChannelQueues.erase(it);
     }
 
@@ -32,7 +35,8 @@ public:
     {
         std::shared_lock lock{ m_mutex };
 
-        for (auto& queue : m_eventChannelQueues) {
+        for (size_t i = 0; i < m_eventChannelQueues.size(); ++i) {
+            auto& queue{ m_eventChannelQueues[i] };
             queue->DispatchAll();
         }
     }
