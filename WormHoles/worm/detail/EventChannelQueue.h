@@ -4,6 +4,10 @@
 #include "EventChannelQueueManager.h"
 #include "ThreadPool.h"
 
+#include <functional>
+#include <mutex>
+#include <vector>
+
 namespace worm::detail {
 template <typename EventType>
 class EventChannelQueue final : public Singleton<EventChannelQueue<EventType>>, public IEventChannelQueue {
@@ -24,7 +28,7 @@ public:
 
         const auto it{ std::find(m_originalPointers.begin(), m_originalPointers.end(), &handler) };
         if (it == m_originalPointers.end()) {
-            throw std::runtime_error("Tried to remove a handler that is not in the list");
+            throw std::runtime_error("Tried to remove a handler that is not in the list.");
         }
 
         const auto idx{ it - m_originalPointers.begin() };
@@ -34,11 +38,9 @@ public:
 
     void Post(const EventType& message)
     {
-        std::shared_lock lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
-        for (const auto& handler : m_handlers) {
-            handler(message);
-        }
+        DispatchEvent(message);
     }
 
     void PostQueued(const EventType& message)
@@ -51,22 +53,18 @@ public:
     void PostAsync(const EventType& message)
     {
         m_threadPool.Enqueue([this, message]() {
-            std::shared_lock lock{ this->m_mutex };
+            std::scoped_lock lock{ this->m_mutex };
 
-            for (const auto& handler : m_handlers) {
-                handler(message);
-            }
+            DispatchEvent(message);
         });
     }
 
     void DispatchAll() override
     {
-        std::shared_lock lock{ m_mutex };
+        std::scoped_lock lock{ m_mutex };
 
         for (const auto& message : m_eventsToDeliver) {
-            for (const auto& handler : m_handlers) {
-                handler(message);
-            }
+            DispatchEvent(message);
         }
 
         m_eventsToDeliver.clear();
@@ -94,6 +92,15 @@ private:
     EventChannelQueue& operator=(const EventChannelQueue& other) = delete;
 
 private:
+    void DispatchEvent(const EventType& message)
+    {
+        for (size_t i = 0; i < m_handlers.size(); ++i) {
+            const auto& handler{ m_handlers[i] };
+            handler(message);
+        }
+    }
+
+private:
     template <typename EventHandlerType>
     static std::function<void(const EventType&)> CreateHandler(EventHandlerType& handler)
     {
@@ -104,7 +111,7 @@ private:
     friend class Singleton<EventChannelQueue<EventType>>;
 
 private:
-    std::shared_mutex m_mutex;
+    std::recursive_mutex m_mutex;
 
     std::vector<std::function<void(const EventType&)>> m_handlers;
 
