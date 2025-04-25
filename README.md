@@ -32,12 +32,16 @@ and a handle function:
  - `QUEUED` - The event is dispatched when `worm::EventChannel::DispatchAllQueued();` is called. It might be somewhere at the beginning of your main loop.
 
 ### Build instructions
-- Run `mkdir build && cd build`
-- Run `cmake -G Ninja ..`
-- Run `ninja`
+```bash
+mkdir build && cd build
+cmake -G Ninja ..
+ninja
+```
 
 ### Run tests
- - Run `ctest --test-dir . --verbose`
+```bash
+ctest --test-dir . --verbose
+```
 
 ## Examples
 ### Example 1: Logger System
