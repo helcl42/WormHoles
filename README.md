@@ -2,32 +2,47 @@
 [![CI Build/Test](https://github.com/helcl42/WormHoles/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/helcl42/WormHoles/actions/workflows/cmake-multi-platform.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/7b1086bbeed54aeca21d2c6db6fa7d54)](https://app.codacy.com/gh/helcl42/WormHoles/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
-WormHoles is a multiplatform header-only library implementing a general and threadsafe event bus.
+WormHoles is a multiplatform, header-only library implementing a general and thread-safe event bus.
 
 ![WormHoles](WormHoles.drawio.svg)
 
-### Overview
-This project is about dispatching messages/events through a system and between its components. An event can be any copyable C++ object.
-Currently, it supports three dispatch options. The library's core is based only on two constructs - broadcasting and handling. The former allows you dispatch an event by calling of `worm::EventChannel::Broadcast(<AN_EVENT>, <DISPATCH_TYPE>);` the latter one is all about handling broadcasted events by adding following member `worm::EventHandler< <HANDLER_REFERENCE_TYPE> , <EVENT_TYPE> > m_notifyEventsHandler{ <HANDLER_REFERENCE> };` and a handle function `void operator()(const <EVENT_TYPE>& evt)`.
+---
 
+## Overview
+
+WormHoles is designed for dispatching messages/events through a system and between its components. An event can be any copyable C++ object. The library supports three dispatch options and is built around two core constructs: **broadcasting** and **handling**. The project has two examples: simple and a bit more complex. For more info, see the sections below.
+
+
+- **Broadcasting**: Dispatch an event using:
+  ```cpp
+  worm::EventChannel::Post(<AN_EVENT>, <DISPATCH_TYPE>);
+  ```
+ - **Handling**: Manage broadcasted events by adding the following member:
+```cpp
+  worm::EventHandler< <HANDLER_REFERENCE_TYPE>, <EVENT_TYPE> > m_handler{ <HANDLER_REFERENCE> };
+```
+and a handle function:
+```cpp
+  void operator()(const <EVENT_TYPE>& evt);
+```
+
+### Dispatch Options
  - `SYNC` - The event is dispatched directly within the current thread(the default one).
- - `ASYNC` - The event is dispatched on another thread from the internal thread pool. It might prevent you from long blocking in event handlers, which is currently a suboptimal solution.
- - `QUEUED` - The event is dispatched when `worm::EventChannel::DispatchAll();` is called. It might be somewhere at the beginning of your main loop. It might prevent you from costly locking. You might not use `QUEUED` way of dispatch so you omit the call `worm::EventChannel::DispatchAll();`
-
-The project has two examples: simple and a bit more complex. For more info, see the sections below.
+ - `ASYNC` - The event is dispatched on another thread from the internal thread pool. It might prevent you from long blocking in event handlers, which is currently a suboptimal solution. Whenever we want to make sure all messages are delivered we might just call `worm::EventChannel::DispatchAllAsync();`.
+ - `QUEUED` - The event is dispatched when `worm::EventChannel::DispatchAllQueued();` is called. It might be somewhere at the beginning of your main loop.
 
 ### Build instructions
 - Run `mkdir build && cd build`
 - Run `cmake -G Ninja ..`
 - Run `ninja`
 
-### TODO
- - ! FIX - make tests !
+### Run tests
+ - Run `ctest --test-dir . --verbose`
 
 ## Examples
-### Example 1
+### Example 1: Logger System
 
-This example shows how to create a lousy coupled Logger. No comments touch `Logger` or `NetworkLogger` directly. They post an event to `EventChannel` as the System class does.
+This example demonstrates how to create a loosely coupled logger. Neither `Logger` nor `NetworkLogger` directly interacts with the `System` class. Instead, they post events to the `EventChannel`.
 
 ```cpp
 #include <worm/EventChannel.h>
@@ -45,21 +60,16 @@ enum class Severity {
     ERROR
 };
 
-// this struct represents an event -> this event might be generated in case you want to log somewhere in your app but you do not want to reference logger
+// Event structure for logging
 struct LogEvent {
     Severity severity;
-
     std::string message;
 };
 
 class Logger {
 public:
-    void operator()(const LogEvent& logItem)
-    {
-        std::cout << "Logging message to stdout: " << logItem.message << std::endl;
-
-        // do whatever you want with logItem -> just to sdout here
-        // ...
+    void operator()(const LogEvent& logItem) {
+        std::cout << "[Logger] " << logItem.message << std::endl;
     }
 
 private:
@@ -68,12 +78,8 @@ private:
 
 class NetworkLogger {
 public:
-    void operator()(const LogEvent& logItem)
-    {
-        std::cout << "Logging message to network: " << logItem.message << std::endl;
-
-        // do whatever you want with logItem -> pass it to web-socket if you need
-        // ...
+    void operator()(const LogEvent& logItem) {
+        std::cout << "[NetworkLogger] " << logItem.message << std::endl;
     }
 
 private:
@@ -82,45 +88,33 @@ private:
 
 class System {
 public:
-    void Init()
-    {
-        // ...
-        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been initialized" }, worm::DispatchType::SYNC);
+    void Init() {
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System initialized" }, worm::DispatchType::SYNC);
     }
 
-    void Update()
-    {
-        // ...
+    void Update() {
         m_counter++;
-        // ...
-        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
     }
 
-    void Shutdown()
-    {
-        //...
-        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been shut down" }, worm::DispatchType::SYNC);
+    void Shutdown() {
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System shut down" }, worm::DispatchType::SYNC);
     }
 
 private:
     uint32_t m_counter{ 0 };
 };
 
-int main(int argc, char** argv)
-{
-    // There is no coupling between System and loggers.
-    Logger logger{};
-    NetworkLogger networkLogger{};
-
-    // the System instance depends on EventChannel and LogEvent(sample code only is taken in account)
-    System system{};
+int main() {
+    Logger logger;
+    NetworkLogger networkLogger;
+    System system;
 
     system.Init();
 
     for (uint32_t i = 0; i < 50; ++i) {
         system.Update();
-
-        std::this_thread::sleep_for(std::chrono::microseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     system.Shutdown();
@@ -128,11 +122,9 @@ int main(int argc, char** argv)
     return 0;
 }
 ```
+### Example 2: Subsystems and Notifications
 
-### Example 2
-
-This example shows a bit more advanced usage of `WormHoles` library. There is a main `System` that starts two quite independently running `Subsystem`s. `SubSystem` instances have their working loop threads, and once they make progress with their work, they notify the main `System`, and it generates some `LogEvent` to let the user know about its progress/state.
-
+This example demonstrates a more advanced usage of the `WormHoles` library. A main `System` starts two independent `Subsystem`s, each running in its own thread. The `Subsystem`s notify the main `System` about their progress, which generates `LogEvent`s.
 
 ```cpp
 #include <worm/EventChannel.h>
@@ -152,11 +144,15 @@ enum class Severity {
     ERROR
 };
 
-// this struct represents an event -> this event might be generated in case you want to log somewhere in your app but you do not want to reference logger
+// Event structure for logging
 struct LogEvent {
     Severity severity;
-
     std::string message;
+};
+
+struct NotifyEvent {
+    std::string subSystemName;
+    std::string statusString;
 };
 
 class StdOutLogger final {
@@ -191,152 +187,93 @@ private:
     worm::EventHandler<NetworkLogger, LogEvent> m_logEventsHandler{ *this };
 };
 
-struct NotifyEvent {
-    std::string subSystemName;
-
-    std::string statusString;
-};
-
 class SubSystem {
 public:
-    SubSystem(const std::string& name, const std::string& buildingBlock, const uint64_t timeout)
-        : m_name{ name }
-        , m_buildingBlock{ buildingBlock }
-        , m_timeoutInMs{ timeout }
-        , m_running{ false }
-    {
-    }
+    SubSystem(const std::string& name, const std::string& buildingBlock, uint64_t timeout)
+        : m_name(name), m_buildingBlock(buildingBlock), m_timeoutInMs(timeout), m_running(false) {}
 
-    ~SubSystem() = default;
-
-public:
-    void Init()
-    {
-        std::scoped_lock lock{ m_mutex };
-
-        if (m_running) {
-            return;
-        }
+    void Init() {
+        std::scoped_lock lock(m_mutex);
+        if (m_running) return;
 
         m_running = true;
         m_thread = std::thread(&SubSystem::Loop, this);
-
-        worm::EventChannel::Post(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been initialized" }, worm::DispatchType::SYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "SubSystem " + m_name + " initialized" }, worm::DispatchType::SYNC);
     }
 
-    void Shutdown()
-    {
-        std::scoped_lock lock{ m_mutex };
-
-        if (!m_running) {
-            return;
-        }
+    void Shutdown() {
+        std::scoped_lock lock(m_mutex);
+        if (!m_running) return;
 
         m_running = false;
-        if (m_thread.joinable()) {
-            m_thread.join();
-        }
-
-        worm::EventChannel::Post(LogEvent{ Severity::INFO, "SubSystem " + m_name + " has been shut down" }, worm::DispatchType::SYNC);
-    }
-
-    bool IsRunning() const
-    {
-        std::scoped_lock lock{ m_mutex };
-
-        return m_running;
+        if (m_thread.joinable()) m_thread.join();
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "SubSystem " + m_name + " shut down" }, worm::DispatchType::SYNC);
     }
 
 private:
-    void Loop()
-    {
+    void Loop() {
         while (m_running) {
             m_statusString += m_buildingBlock;
-
-            worm::EventChannel::Post(NotifyEvent{ m_name, m_statusString }, m_updateDispatchType);
-
+            worm::EventChannel::Post(NotifyEvent{ m_name, m_statusString }, worm::DispatchType::QUEUED);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_timeoutInMs));
         }
     }
 
-private:
     std::string m_name;
-
     std::string m_buildingBlock;
-
     uint64_t m_timeoutInMs;
-
     std::string m_statusString;
-
     std::thread m_thread;
-
     mutable std::mutex m_mutex;
-
     std::atomic<bool> m_running;
-
-    const worm::DispatchType m_updateDispatchType{ worm::DispatchType::QUEUED };
 };
 
 class System {
 public:
-    void Init()
-    {
+    void Init() {
         m_subSystemX.Init();
         m_subSystemY.Init();
-
-        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been initialized" }, worm::DispatchType::ASYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System initialized" }, worm::DispatchType::ASYNC);
     }
 
-    void Update()
-    {
+    void Update() {
         ++m_counter;
-
-        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
     }
 
-    void Shutdown()
-    {
-        m_subSystemY.Shutdown();
+    void Shutdown() {
         m_subSystemX.Shutdown();
-
-        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System has been shut down" }, worm::DispatchType::ASYNC);
+        m_subSystemY.Shutdown();
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System shut down" }, worm::DispatchType::ASYNC);
     }
 
-public:
-    void operator()(const NotifyEvent& notify)
-    {
-        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System was notified by SubSystem " + notify.subSystemName + " about it's work progress \"" + notify.statusString + "\"" }, worm::DispatchType::SYNC);
+    void operator()(const NotifyEvent& notify) {
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System notified by " + notify.subSystemName + ": " + notify.statusString }, worm::DispatchType::SYNC);
     }
 
 private:
     worm::EventHandler<System, NotifyEvent> m_notifyEventsHandler{ *this };
-
-private:
-    SubSystem m_subSystemX{ "TrippleX", "X", 250 };
-
-    SubSystem m_subSystemY{ "DoubleY", "Y", 375 };
-
+    SubSystem m_subSystemX{ "SubSystemX", "X", 250 };
+    SubSystem m_subSystemY{ "SubSystemY", "Y", 375 };
     uint32_t m_counter{ 0 };
 };
 
-int main(int argc, char** argv)
-{
-    // There is no coupling between System, SubSystem and loggers.
-    StdOutLogger logger{};
-    NetworkLogger networkLogger{};
+int main() {
+    StdOutLogger stdOutLogger;
+    NetworkLogger networkLogger;
 
-    System system{};
+    System system;
 
     system.Init();
 
     for (uint32_t i = 0; i < 50; ++i) {
-        worm::EventChannel::DispatchQueued();
-
+        worm::EventChannel::DispatchAllQueued();
         system.Update();
-
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
+    worm::EventChannel::DispatchAll();
+    
     system.Shutdown();
 
     return 0;
