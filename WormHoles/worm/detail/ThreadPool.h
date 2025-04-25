@@ -15,6 +15,10 @@ public:
     inline ThreadPool(const size_t threads)
         : m_running{ true }
     {
+        if (threads == 0) {
+            throw std::runtime_error("ThreadPool must have at least one thread");
+        }
+
         for (size_t i = 0; i < threads; ++i)
             m_workers.emplace_back(
                 [this] {
@@ -36,9 +40,19 @@ public:
                             task = std::move(this->m_tasks.front());
 
                             this->m_tasks.pop();
+
+                            ++m_activeTasks;
+                            --m_idleThreads;
                         }
 
                         task();
+
+                        {
+                            std::scoped_lock lock{ m_queueMutex };
+                            --m_activeTasks;
+                            ++m_idleThreads;
+                            m_idleCondition.notify_one();
+                        }
                     }
                 });
     }
@@ -81,6 +95,19 @@ public:
         return res;
     }
 
+    void WaitIdle()
+    {
+        {
+            std::scoped_lock lock{ m_queueMutex };
+            if (m_activeTasks == 0) {
+                return;
+            }
+        }
+
+        std::unique_lock lock{ m_queueMutex };
+        m_idleCondition.wait(lock, [this] { return m_activeTasks == 0; });
+    }
+
 private:
     std::atomic<bool> m_running;
 
@@ -91,6 +118,12 @@ private:
     std::mutex m_queueMutex;
 
     std::condition_variable m_runningCondition;
+
+    std::condition_variable m_idleCondition;
+
+    std::atomic<size_t> m_activeTasks{ 0 };
+
+    std::atomic<size_t> m_idleThreads{ 0 };
 };
 } // namespace worm::detail
 
