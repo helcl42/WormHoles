@@ -134,11 +134,15 @@ private:
 
     std::vector<EventType> m_eventsToDeliver;
 
-    ThreadPool m_threadPool{ 1 };
+    ThreadPool m_threadPool{ THREAD_POOL_THREAD_COUNT };
 
     std::vector<std::future<void>> m_asyncTasks;
 
     std::mutex m_asyncTasksMutex;
+
+
+private:
+    static const inline size_t THREAD_POOL_THREAD_COUNT{ 1 };
 };
 } // namespace worm::detail
 
