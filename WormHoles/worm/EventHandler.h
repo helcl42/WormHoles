@@ -10,12 +10,12 @@ public:
     EventHandler(EventHandlerType& instance)
         : m_handlerInstance{ instance }
     {
-        EventChannel::Add<EventType>(m_handlerInstance);
+        EventChannel::Add<EventType>(*this);
     }
 
     ~EventHandler()
     {
-        EventChannel::Remove<EventType>(m_handlerInstance);
+        EventChannel::Remove<EventType>(*this);
     }
 
 public:
@@ -26,6 +26,12 @@ public:
     EventHandler(EventHandler&& other) = default;
 
     EventHandler& operator=(EventHandler&& other) = default;
+
+public:
+    void operator()(const EventType& message)
+    {
+        m_handlerInstance(message);
+    }
 
 private:
     EventHandlerType& m_handlerInstance;
