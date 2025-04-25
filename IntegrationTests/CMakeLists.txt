@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 3.10)
 project(IntegrationTests)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-SET(SOURCE_GROUP_DELIMITER "/")
+set(SOURCE_GROUP_DELIMITER "/")
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(DCMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
 
