@@ -4,12 +4,11 @@
 #include "EventChannelQueueManager.h"
 #include "ThreadPool.h"
 
+#include <deque>
 #include <functional>
 #include <future>
 #include <mutex>
 #include <vector>
-
-#include <iostream>
 
 namespace worm::detail {
 template <typename EventType>
@@ -132,14 +131,13 @@ private:
 
     std::vector<void*> m_originalPointers;
 
-    std::vector<EventType> m_eventsToDeliver;
+    std::deque<EventType> m_eventsToDeliver;
 
     ThreadPool m_threadPool{ THREAD_POOL_THREAD_COUNT };
 
-    std::vector<std::future<void>> m_asyncTasks;
+    std::deque<std::future<void>> m_asyncTasks;
 
     std::mutex m_asyncTasksMutex;
-
 
 private:
     static const inline size_t THREAD_POOL_THREAD_COUNT{ 1 };
