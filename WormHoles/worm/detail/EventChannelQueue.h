@@ -138,7 +138,7 @@ private:
 
     std::vector<std::future<void>> m_asyncTasks;
 
-    std::recursive_mutex m_asyncTasksMutex;
+    std::mutex m_asyncTasksMutex;
 };
 } // namespace worm::detail
 
