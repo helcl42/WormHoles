@@ -4,7 +4,9 @@
 namespace worm::detail {
 class IEventChannelQueue {
 public:
-    virtual void DispatchAll() = 0;
+    virtual void DispatchAllQueued() = 0;
+
+    virtual void DispatchAllAsync() = 0;
 
 public:
     virtual ~IEventChannelQueue() = default;

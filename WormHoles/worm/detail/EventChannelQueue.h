@@ -59,7 +59,7 @@ public:
         });
     }
 
-    void DispatchAll() override
+    void DispatchAllQueued() override
     {
         std::scoped_lock lock{ m_mutex };
 
@@ -68,6 +68,13 @@ public:
         }
 
         m_eventsToDeliver.clear();
+    }
+
+    void DispatchAllAsync() override
+    {
+        std::scoped_lock lock{ m_mutex };
+
+        m_threadPool.WaitIdle();
     }
 
 private:

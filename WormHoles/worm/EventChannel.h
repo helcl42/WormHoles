@@ -40,7 +40,17 @@ public:
         }
     }
 
-    static void DispatchQueued()
+    static void DispatchAllQueued()
+    {
+        detail::EventChannelQueueManager::Instance().DispatchAllQueued();
+    }
+
+    static void DispatchAllAsync()
+    {
+        detail::EventChannelQueueManager::Instance().DispatchAllAsync();
+    }
+
+    static void DispatchAll()
     {
         detail::EventChannelQueueManager::Instance().DispatchAll();
     }

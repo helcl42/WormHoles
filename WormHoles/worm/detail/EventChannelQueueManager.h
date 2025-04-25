@@ -32,13 +32,42 @@ public:
         m_eventChannelQueues.erase(it);
     }
 
+    void DispatchAllQueued()
+    {
+        std::shared_lock lock{ m_mutex };
+
+        DispatchAllQueuedInternal();
+    }
+
+    void DispatchAllAsync()
+    {
+        std::shared_lock lock{ m_mutex };
+
+        DispatchAllAsyncInternal();
+    }
+
     void DispatchAll()
     {
         std::shared_lock lock{ m_mutex };
 
+        DispatchAllQueuedInternal();
+        DispatchAllAsyncInternal();
+    }
+
+private:
+    void DispatchAllQueuedInternal()
+    {
         for (size_t i = 0; i < m_eventChannelQueues.size(); ++i) {
             auto& queue{ m_eventChannelQueues[i] };
-            queue->DispatchAll();
+            queue->DispatchAllQueued();
+        }
+    }
+
+    void DispatchAllAsyncInternal()
+    {
+        for (size_t i = 0; i < m_eventChannelQueues.size(); ++i) {
+            auto& queue{ m_eventChannelQueues[i] };
+            queue->DispatchAllAsync();
         }
     }
 
