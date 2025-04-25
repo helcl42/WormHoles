@@ -71,8 +71,6 @@ TEST(EventChannelQueueTest, PostAsyncEvents)
     // Post an asynchronous event
     queue.PostAsync(TestEvent{ "Async Message" });
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Give some time for async processing
-
     queue.DispatchAllAsync();
 
     // Verify the message is delivered

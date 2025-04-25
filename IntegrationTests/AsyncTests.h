@@ -15,8 +15,6 @@ TEST(PublishSubscribeTest, HandleAsyncEvent)
     // Post an asynchronous event
     worm::EventChannel::Post(TestEvent{ "Async Message" }, worm::DispatchType::ASYNC);
     
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
     worm::EventChannel::DispatchAllAsync();
 
     // Verify the handler processed the async event
@@ -31,8 +29,6 @@ TEST(PublishSubscribeTest, HandleMultipleAsyncEvents)
     // Post multiple asynchronous events
     worm::EventChannel::Post(TestEvent{ "Async Message 1" }, worm::DispatchType::ASYNC);
     worm::EventChannel::Post(TestEvent{ "Async Message 2" }, worm::DispatchType::ASYNC);
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     worm::EventChannel::DispatchAllAsync();
 
@@ -55,8 +51,6 @@ TEST(PublishSubscribeTest, HandleMultipleAsyncEvents2)
         TestEvent event{ getMessage(i) };
         worm::EventChannel::Post(event, worm::DispatchType::ASYNC);
     }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     worm::EventChannel::DispatchAllAsync();
 

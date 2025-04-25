@@ -5,8 +5,11 @@
 #include "ThreadPool.h"
 
 #include <functional>
+#include <future>
 #include <mutex>
 #include <vector>
+
+#include <iostream>
 
 namespace worm::detail {
 template <typename EventType>
@@ -52,11 +55,13 @@ public:
 
     void PostAsync(const EventType& message)
     {
-        m_threadPool.Enqueue([this, message]() {
+        std::scoped_lock lock{ m_asyncTasksMutex };
+
+        m_asyncTasks.emplace_back(m_threadPool.Enqueue([this, message]() {
             std::scoped_lock lock{ this->m_mutex };
 
             DispatchEvent(message);
-        });
+        }));
     }
 
     void DispatchAllQueued() override
@@ -72,9 +77,12 @@ public:
 
     void DispatchAllAsync() override
     {
-        std::scoped_lock lock{ m_mutex };
+        std::scoped_lock lock{ m_asyncTasksMutex };
 
-        m_threadPool.WaitIdle();
+        for (auto&& task : m_asyncTasks) {
+            task.get();
+        }
+        m_asyncTasks.clear();
     }
 
 private:
@@ -127,6 +135,10 @@ private:
     std::vector<EventType> m_eventsToDeliver;
 
     ThreadPool m_threadPool{ 1 };
+
+    std::vector<std::future<void>> m_asyncTasks;
+
+    std::recursive_mutex m_asyncTasksMutex;
 };
 } // namespace worm::detail
 
