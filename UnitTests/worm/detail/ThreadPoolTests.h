@@ -72,26 +72,4 @@ TEST(ThreadPoolTest, HandleExceptions)
     EXPECT_THROW(future.get(), std::runtime_error);
 }
 
-TEST(ThreadPoolTest, WaitIdle)
-{
-    worm::detail::ThreadPool pool(4); // Create a thread pool with 4 threads
-
-    std::atomic<int> counter{ 0 };
-    const int numTasks = 10;
-
-    // Submit tasks to the thread pool
-    for (int i = 0; i < numTasks; ++i) {
-        pool.Enqueue([&counter]() {
-            std::this_thread::sleep_for(std::chrono::milliseconds(50)); // Simulate work
-            counter++;
-        });
-    }
-
-    // Call WaitIdle to ensure all tasks are completed
-    pool.WaitIdle();
-
-    // Verify that all tasks have been completed
-    EXPECT_EQ(counter.load(), numTasks);
-}
-
 #endif

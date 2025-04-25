@@ -95,19 +95,6 @@ public:
         return res;
     }
 
-    void WaitIdle()
-    {
-        {
-            std::scoped_lock lock{ m_queueMutex };
-            if (m_activeTasks == 0) {
-                return;
-            }
-        }
-
-        std::unique_lock lock{ m_queueMutex };
-        m_idleCondition.wait(lock, [this] { return m_activeTasks == 0; });
-    }
-
 private:
     std::atomic<bool> m_running;
 
