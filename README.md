@@ -27,9 +27,11 @@ and a handle function:
 ```
 
 ### Dispatch Options
- - `SYNC` - The event is dispatched directly within the current thread(the default one).
- - `ASYNC` - The event is dispatched on another thread from the internal thread pool. It might prevent you from long blocking in event handlers, which is currently a suboptimal solution. Whenever we want to make sure all messages are delivered we might just call `worm::EventChannel::DispatchAllAsync();`.
- - `QUEUED` - The event is dispatched when `worm::EventChannel::DispatchAllQueued();` is called. It might be somewhere at the beginning of your main loop.
+ - `SYNC` - The event is dispatched right away within the current thread.
+ - `ASYNC` - The event is dispatched on another thread from the internal thread pool. This is useful for offloading work to another thread to avoid blocking the main thread. However, it may introduce latency. To ensure all `ASYNC` messages are delivered, call `worm::EventChannel::DispatchAllAsync();`. The message order is preserved since there is only one thread for async dispatch.
+ - `QUEUED` - The event is dispatched when `worm::EventChannel::DispatchAllQueued();` (or `worm::EventChannel::DispatchAll();`) is called.  This is useful for batching event processing, such as at the beginning of a main loop.
+
+ *To make sure that all `QUEUED` and `ASYNC` messages are dispatche you can call `worm::EventChannel::DispatchAll();`*
 
 ### Build instructions
 ```bash
