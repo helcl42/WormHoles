@@ -40,19 +40,9 @@ public:
                             task = std::move(this->m_tasks.front());
 
                             this->m_tasks.pop();
-
-                            ++m_activeTasks;
-                            --m_idleThreads;
                         }
 
                         task();
-
-                        {
-                            std::scoped_lock lock{ m_queueMutex };
-                            --m_activeTasks;
-                            ++m_idleThreads;
-                            m_idleCondition.notify_one();
-                        }
                     }
                 });
     }
@@ -105,12 +95,6 @@ private:
     std::mutex m_queueMutex;
 
     std::condition_variable m_runningCondition;
-
-    std::condition_variable m_idleCondition;
-
-    std::atomic<size_t> m_activeTasks{ 0 };
-
-    std::atomic<size_t> m_idleThreads{ 0 };
 };
 } // namespace worm::detail
 
