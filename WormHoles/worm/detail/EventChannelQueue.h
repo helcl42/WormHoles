@@ -147,7 +147,7 @@ private:
 
     ThreadPool m_threadPool{ THREAD_POOL_THREAD_COUNT };
 
-    RingBuffer<std::future<void>, MAX_QUEUED_MESSAGE_COUNT> m_asyncTasks;
+    RingBuffer<std::future<void>, MAX_ASYNC_TASK_COUNT> m_asyncTasks;
 
     std::mutex m_asyncTasksMutex;
 };
