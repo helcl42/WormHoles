@@ -47,7 +47,7 @@ public:
 
     void Update() {
         m_counter++;
-        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System updated - " + std::to_string(m_counter) }, worm::DispatchType::SYNC);
     }
 
     void Shutdown() {

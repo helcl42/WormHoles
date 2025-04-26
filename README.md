@@ -48,7 +48,7 @@ ctest --test-dir . --verbose
 ## Examples
 ### Example 1: Logger System
 
-This example demonstrates how to create a loosely coupled logger. Neither `Logger` nor `NetworkLogger` directly interacts with the `System` class. Instead, they post events to the `EventChannel`.
+This example demonstrates how to create a loosely coupled logger. Neither `Logger` nor `NetworkLogger` directly interacts with the `System` class. Instead, they post events to the `EventChannel`. All happens in context of one thread only.
 
 ```cpp
 #include <worm/EventChannel.h>
@@ -100,7 +100,7 @@ public:
 
     void Update() {
         m_counter++;
-        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System updated - " + std::to_string(m_counter) }, worm::DispatchType::ASYNC);
+        worm::EventChannel::Post(LogEvent{ Severity::INFO, "System updated - " + std::to_string(m_counter) }, worm::DispatchType::SYNC);
     }
 
     void Shutdown() {
