@@ -15,6 +15,9 @@ TEST(PublishSubscribeTest, HandleQueuedEvent)
     // Post a queued event
     worm::EventChannel::Post(TestEvent{ "Queued Message" }, worm::DispatchType::QUEUED);
 
+    // Verify no messages are delivered yet
+    EXPECT_TRUE(object.GetMessages().empty());
+
     // Dispatch all queued events
     worm::EventChannel::DispatchAllQueued();
 
@@ -30,6 +33,9 @@ TEST(PublishSubscribeTest, HandleMultipleQueuedEvents)
     // Post multiple queued events
     worm::EventChannel::Post(TestEvent{ "Queued Message 1" }, worm::DispatchType::QUEUED);
     worm::EventChannel::Post(TestEvent{ "Queued Message 2" }, worm::DispatchType::QUEUED);
+
+    // Verify no messages are delivered yet
+    EXPECT_TRUE(object.GetMessages().empty());
 
     // Dispatch all queued events
     worm::EventChannel::DispatchAllQueued();
@@ -55,6 +61,9 @@ TEST(PublishSubscribeTest, HandleMultipleQueuedEvents2)
         TestEvent event{ getMessage(i) };
         worm::EventChannel::Post(event, worm::DispatchType::QUEUED);
     }
+
+    // Verify no messages are delivered yet
+    EXPECT_TRUE(object.GetMessages().empty());
 
     // Dispatch all queued events
     worm::EventChannel::DispatchAllQueued();
