@@ -2,9 +2,9 @@
 #define __WH_EVENT_CHANNEL_QUEUE_H__
 
 #include "EventChannelQueueManager.h"
+#include "RingBuffer.h"
 #include "ThreadPool.h"
 
-#include <deque>
 #include <functional>
 #include <future>
 #include <mutex>
@@ -49,39 +49,55 @@ public:
     {
         std::scoped_lock lock{ m_mutex };
 
-        m_eventsToDeliver.emplace_back(message);
+        m_eventsToDeliver.Push(message);
+
+        if (m_eventsToDeliver.IsFull()) {
+            DispatchAllQueuedInternal();
+        }
     }
 
     void PostAsync(const EventType& message)
     {
         std::scoped_lock lock{ m_asyncTasksMutex };
 
-        m_asyncTasks.emplace_back(m_threadPool.Enqueue([this, message]() {
+        m_asyncTasks.MovePush(std::move(m_threadPool.Enqueue([this, message]() {
             std::scoped_lock lock{ this->m_mutex };
 
             DispatchEvent(message);
-        }));
+        })));
+
+        if (m_asyncTasks.IsFull()) {
+            DispatchAllAsyncInternal();
+        }
     }
 
     void DispatchAllQueued() override
     {
         std::scoped_lock lock{ m_mutex };
 
-        for (const auto& message : m_eventsToDeliver) {
-            DispatchEvent(message);
-        }
-
-        m_eventsToDeliver.clear();
+        DispatchAllQueuedInternal();
     }
 
     void DispatchAllAsync() override
     {
         std::scoped_lock lock{ m_asyncTasksMutex };
 
-        for (auto&& task : m_asyncTasks) {
-            task.get();
+        DispatchAllAsyncInternal();
+    }
+
+private:
+    void DispatchAllQueuedInternal()
+    {
+        while (!m_eventsToDeliver.IsEmpty()) {
+            DispatchEvent(m_eventsToDeliver.Pop());
         }
-        m_asyncTasks.clear();
+    }
+
+    void DispatchAllAsyncInternal()
+    {
+        while (!m_asyncTasks.IsEmpty()) {
+            m_asyncTasks.MovePop().get();
+        }
     }
 
 private:
@@ -97,15 +113,6 @@ private:
     }
 
 private:
-    EventChannelQueue(EventChannelQueue&& other) = delete;
-
-    EventChannelQueue& operator=(EventChannelQueue&& other) = delete;
-
-    EventChannelQueue(const EventChannelQueue& other) = delete;
-
-    EventChannelQueue& operator=(const EventChannelQueue& other) = delete;
-
-private:
     void DispatchEvent(const EventType& message)
     {
         for (size_t i = 0; i < m_handlers.size(); ++i) {
@@ -114,7 +121,6 @@ private:
         }
     }
 
-private:
     template <typename EventHandlerType>
     static std::function<void(const EventType&)> CreateHandler(EventHandlerType& handler)
     {
@@ -125,22 +131,25 @@ private:
     friend class Singleton<EventChannelQueue<EventType>>;
 
 private:
+    static const inline size_t MAX_ASYNC_TASK_COUNT{ 1024 };
+
+    static const inline size_t MAX_QUEUED_MESSAGE_COUNT{ 1024 };
+
+    static const inline size_t THREAD_POOL_THREAD_COUNT{ 1 };
+
     std::recursive_mutex m_mutex;
 
     std::vector<std::function<void(const EventType&)>> m_handlers;
 
     std::vector<void*> m_originalPointers;
 
-    std::deque<EventType> m_eventsToDeliver;
+    RingBuffer<EventType, MAX_QUEUED_MESSAGE_COUNT> m_eventsToDeliver;
 
     ThreadPool m_threadPool{ THREAD_POOL_THREAD_COUNT };
 
-    std::deque<std::future<void>> m_asyncTasks;
+    RingBuffer<std::future<void>, MAX_QUEUED_MESSAGE_COUNT> m_asyncTasks;
 
     std::mutex m_asyncTasksMutex;
-
-private:
-    static const inline size_t THREAD_POOL_THREAD_COUNT{ 1 };
 };
 } // namespace worm::detail
 

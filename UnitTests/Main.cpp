@@ -1,5 +1,6 @@
 #include "worm/detail/SingletonTests.h"
 #include "worm/detail/ThreadPoolTests.h"
+#include "worm/detail/RingBufferTests.h"
 
 #include "worm/detail/EventChannelQueueManagerTests.h"
 #include "worm/detail/EventChannelQueueTests.h"
