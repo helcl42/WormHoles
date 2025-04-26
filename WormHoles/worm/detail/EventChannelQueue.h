@@ -49,11 +49,7 @@ public:
     {
         std::scoped_lock lock{ m_mutex };
 
-        m_eventsToDeliver.Push(message);
-
-        if (m_eventsToDeliver.IsFull()) {
-            DispatchAllQueuedInternal();
-        }
+        m_eventsToDeliver.emplace_back(message);
     }
 
     void PostAsync(const EventType& message)
@@ -88,9 +84,10 @@ public:
 private:
     void DispatchAllQueuedInternal()
     {
-        while (!m_eventsToDeliver.IsEmpty()) {
-            DispatchEvent(m_eventsToDeliver.Pop());
+        for (const auto& message : m_eventsToDeliver) {
+            DispatchEvent(message);
         }
+        m_eventsToDeliver.clear();
     }
 
     void DispatchAllAsyncInternal()
@@ -133,8 +130,6 @@ private:
 private:
     static const inline size_t MAX_ASYNC_TASK_COUNT{ 1024 };
 
-    static const inline size_t MAX_QUEUED_MESSAGE_COUNT{ 1024 };
-
     static const inline size_t THREAD_POOL_THREAD_COUNT{ 1 };
 
     std::recursive_mutex m_mutex;
@@ -143,7 +138,7 @@ private:
 
     std::vector<void*> m_originalPointers;
 
-    RingBuffer<EventType, MAX_QUEUED_MESSAGE_COUNT> m_eventsToDeliver;
+    std::deque<EventType> m_eventsToDeliver;
 
     ThreadPool m_threadPool{ THREAD_POOL_THREAD_COUNT };
 
